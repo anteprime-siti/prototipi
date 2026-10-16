@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Prototipi — anteprime siti</title>
+<meta name="robots" content="noindex, nofollow">
+<style>
+  :root{--bg:#f4f4f2;--ink:#161616;--muted:#777;--line:#dcdcd8;--card:#fff}
+  @media (prefers-color-scheme:dark){:root{--bg:#141414;--ink:#eee;--muted:#999;--line:#2c2c2c;--card:#1c1c1c}}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--ink);font-family:ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;line-height:1.6}
+  .wrap{width:min(880px,100% - 32px);margin:0 auto;padding:72px 0}
+  h1{font-size:1.1rem;font-weight:600;letter-spacing:.02em}
+  p.intro{color:var(--muted);font-size:.85rem;margin:8px 0 48px;max-width:60ch}
+  ul{list-style:none;border-top:1px solid var(--line)}
+  li a{display:grid;grid-template-columns:1fr auto;gap:16px;align-items:center;padding:20px 4px;border-bottom:1px solid var(--line);text-decoration:none;color:inherit;transition:background .2s}
+  li a:hover{background:var(--card)}
+  .name{font-size:1rem}
+  .desc{font-size:.8rem;color:var(--muted)}
+  .stato{font-size:.7rem;text-transform:uppercase;letter-spacing:.12em;padding:4px 10px;border:1px solid var(--line);border-radius:99px;white-space:nowrap}
+  .stato.lavori{color:#b5751c;border-color:currentColor}
+  .stato.pronto{color:#3c8a4f;border-color:currentColor}
+  footer{margin-top:48px;font-size:.75rem;color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>prototipi/</h1>
+  <p class="intro">Anteprime dei siti in lavorazione. Ogni progetto, una volta completato, viene spostato su un repository e un dominio propri, gestiti dal cliente.</p>
+  <ul>
+    <!-- Aggiungi qui un <li> per ogni nuovo sito. Stato: "lavori" oppure "pronto" -->
+    <li><a href="artista-pittore/">
+      <div><div class="name">Artista pittore</div><div class="desc">Galleria di dipinti · biografia · mostre · contatti</div></div>
+      <span class="stato lavori">in lavorazione</span>
+    </a></li>
+  </ul>
+  <footer>Pagina non indicizzata dai motori di ricerca.</footer>
+</div>
+</body>
+</html>
