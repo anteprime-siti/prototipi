@@ -1,0 +1,6 @@
+Metti qui le foto dei quadri e il ritratto dell'artista.
+
+- Formato JPG, lato lungo circa 2000 px, sotto i 500 KB ciascuna.
+- Nomi senza spazi né accenti, es.: tramonto-sul-po-2024.jpg
+- Poi in index.html, nella lista OPERE, scrivi per ogni quadro:  img:"img/tramonto-sul-po-2024.jpg"
+- Ritratto: chiamalo ritratto.jpg e togli il commento dal tag <img> nella sezione "L'artista".
