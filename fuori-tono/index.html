@@ -2,21 +2,47 @@
 <html lang="it">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Fuori Tono · Monitor</title>
-<meta name="description" content="Fuori Tono: il gioco dell’impostore da fare a voce, con il monitor al centro e i telefoni in mano.">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect x='14' y='14' width='72' height='72' rx='20' fill='%2322C08A' stroke='%231D1A2B' stroke-width='8' transform='rotate(14 50 50)'/%3E%3C/svg%3E">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0A0A0C">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27%3E%3Crect width=%27100%27 height=%27100%27 rx=%2722%27 fill=%27%230A0A0C%27/%3E%3Ccircle cx=%2750%27 cy=%2750%27 r=%2726%27 fill=%27none%27 stroke=%27%23FF3B30%27 stroke-width=%2712%27/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css">
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css?v=2">
+<title>Fuori Tono</title>
+<meta name="description" content="Fuori Tono: il gioco dell’impostore da fare a voce. Uno schermo fa da tavolo, ognuno gioca dal proprio telefono.">
 </head>
-<body class="host">
-<div class="bgdeco"></div>
-<main id="app"></main>
-<script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
-<script src="js/common.js"></script>
-<script src="js/parole.js"></script>
-<script src="js/host.js"></script>
+<body>
+<main class="landing">
+  <header><span class="mono dim">Un gioco di Sebastyan Buryas</span></header>
+  <section class="hero">
+    <p class="kicker red">Gioco di società · da 3 a 20 giocatori</p>
+    <h1 class="logo xl">Fuori<br>T<span class="lo">o</span>no</h1>
+    <p class="tagline">Tutti conoscono la parola segreta. Uno di voi no. Trovatelo prima che se ne accorga.</p>
+    <div class="choices">
+      <a class="choice hot" id="host" href="host.html">
+        <span class="mono">01 · Schermo comune</span><span class="t">Ospita una partita</span>
+        <span class="d">Questo dispositivo fa da tavolo: TV, computer, tablet o anche un telefono. Mostra il QR, i turni e il voto.</span>
+      </a>
+      <div class="choice">
+        <span class="mono">02 · Il tuo telefono</span><span class="t">Entra in una partita</span>
+        <span class="d">Scrivi il codice che vedi sullo schermo dell’host, oppure inquadra il suo QR.</span>
+        <form id="join" autocomplete="off"><label class="sr" for="code">Codice della stanza</label><input id="code" maxlength="4" placeholder="ABCD" autocapitalize="characters"><button class="btn primary" type="submit">Entra</button></form>
+      </div>
+    </div>
+    <ol class="steps"><li><b>Leggi il fascicolo</b>Ognuno riceve la parola segreta sul telefono. L’impostore no.</li>
+      <li><b>Una parola a testa</b>A turno, ad alta voce: abbastanza per farti riconoscere, non abbastanza per svelarla.</li>
+      <li><b>Vota</b>Chi è fuori tono? Se l’impostore viene scoperto, può ancora rubare la vittoria indovinando la parola.</li></ol>
+  </section>
+  <footer class="foot"><span>Fuori Tono · 2026</span><span>Funziona nel browser, senza app da installare.</span></footer>
+</main>
+<script>
+const q = new URLSearchParams(location.search), ph = q.get('ph') ? '&ph=' + encodeURIComponent(q.get('ph')) : '';
+if (ph) document.getElementById('host').href = 'host.html?' + ph.slice(1);
+document.getElementById('join').addEventListener('submit', e => {
+  e.preventDefault();
+  const c = document.getElementById('code').value.toUpperCase().replace(/[^A-Z]/g, '');
+  location.href = 'gioca.html' + (c.length === 4 ? '?r=' + c + ph : (ph ? '?' + ph.slice(1) : ''));
+});
+</script>
 </body>
 </html>

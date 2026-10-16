@@ -1,50 +1,23 @@
-# Fuori Tono
+# Fuori Tono · v2
 
-Il gioco dell’impostore da fare a voce. Il monitor fa da tavolo, ogni giocatore usa il proprio telefono.
+Il gioco dell’impostore da fare a voce. Progetto personale di Sebastyan Buryas, sezione laboratorio di `prototipi`.
 
-- **index.html**: il monitor (QR, giocatori, turni, voto, risultati, impostazioni)
-- **gioca.html**: la pagina che si apre dal telefono inquadrando il QR
+- **index.html**: pagina iniziale, si sceglie *Ospita una partita* o *Entra in una partita*
+- **host.html**: lo schermo comune (TV, computer, tablet o telefono): QR, sospettati, turni, voto, risultati, impostazioni
+- **gioca.html**: il telefono di ogni giocatore (ci si arriva anche dal QR)
 
-Non serve un server: monitor e telefoni si collegano direttamente tra loro (WebRTC con PeerJS). Basta pubblicare la cartella.
+Online: `https://anteprime-siti.github.io/prototipi/fuori-tono/`
 
-## Dove si trova
-
-Progetto personale di Sebastyan Buryas, nella sezione **laboratorio** del repository `prototipi`. Online sarà su:
-
-`https://anteprime-siti.github.io/prototipi/fuori-tono/`
-
-Apri quell’indirizzo sul computer collegato al monitor e premi il tasto “schermo intero”. I giocatori inquadrano il QR oppure aprono `.../fuori-tono/gioca.html` e scrivono il codice di 4 lettere.
-
-Se un giorno vorrai dargli un indirizzo suo, basta copiare questa cartella in un repository dedicato e attivare GitHub Pages.
-
-## Come si gioca
-
-1. **Scopri la carta**: tutti ricevono la parola segreta, tranne l’impostore (o gli impostori).
-2. **Di’ una parola**: a turno, ad alta voce, una parola collegata. Il monitor indica chi parla.
-3. **Vota**: dal telefono si vota chi è fuori tono. Se l’impostore viene scoperto può provare a indovinare la parola per rubare la vittoria.
-
-Punti: +1 a ogni innocente se vincono gli innocenti, +2 a ogni impostore se vincono gli impostori, +1 extra a chi indovina la parola.
-
-## Impostazioni (dal monitor)
-
-- Temi: 18 temi pronti (Cibo, Luoghi, Animali, Oggetti, Colori con campione, Film e serie, Sport, Mestieri, Arte, Musica, Città e paesi, Tech e app, Viaggi, Scuola e uni, Fantasy ed eroi, Feste, Emozioni, Torino) più le vostre parole.
-- Numero di impostori, oppure “a sorpresa”.
-- Cosa vede l’impostore: niente, la categoria, una parola simile come indizio, oppure **Undercover** (riceve la parola simile senza sapere di essere l’impostore).
-- Giri di indizi prima del voto, tempo per turno, parola visibile una sola volta o sempre, categoria sul monitor, ultima chance, votazione unica o fino all’ultimo.
+## Novità della v2
+- Nuovo look scuro, tra noir e quiz show; la parola segreta è sotto una barra censurata e si legge tenendo premuto.
+- Pagina iniziale con scelta tra host e giocatore; l’host funziona anche da telefono.
+- **Gioco anch’io**: chi ospita può partecipare dallo stesso dispositivo, con la scheda privata «La mia carta».
+- Profilo del giocatore: nome, simbolo (16 icone) oppure una propria foto. Resta salvato sul telefono per le volte successive.
+- Il giocatore può modificare il profilo o uscire dalla stanza; l’host può rinominare, cambiare simbolo e colore, togliere la foto o togliere un giocatore, anche a partita in corso.
+- Voto in due passaggi: si sceglie il sospettato, poi **Conferma** o **Annulla**; dopo il voto c’è **Cambia voto**.
 
 ## Da sapere
-
-- Serve internet sia sul monitor sia sui telefoni (il collegamento iniziale passa dal server gratuito di PeerJS).
-- La pagina del monitor deve restare aperta: se si ricarica, la stanza e i giocatori vengono ripresi.
-- Funziona meglio con tutti sulla stessa rete Wi‑Fi. Con alcune reti mobili molto chiuse il collegamento diretto può non riuscire.
-- Per aggiungere parole o temi: `js/parole.js`.
-
-## Prova in locale
-
-Serve un piccolo server (i file aperti con doppio clic non funzionano):
-
-```
-python -m http.server 8080
-```
-
-e poi `http://localhost:8080` sul computer. Per i telefoni sulla stessa rete usa l’indirizzo IP del computer.
+- Serve internet su tutti i dispositivi (collegamento iniziale tramite il server gratuito di PeerJS; librerie da cdn.jsdelivr.net).
+- Lo schermo dell’host deve restare aperto; se si ricarica, stanza e giocatori vengono ripresi.
+- Meglio tutti sullo stesso Wi‑Fi: con alcune reti mobili molto chiuse il collegamento diretto può non riuscire.
+- Parole e temi: `js/parole.js`.
