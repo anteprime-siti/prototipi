@@ -35,6 +35,9 @@ a{color:inherit}
 
 .mark{font:500 13px var(--mono);letter-spacing:.02em;color:var(--muted)}
 .mark b{color:var(--ink);font-weight:500}
+.mark{display:flex;flex-direction:column;gap:14px}
+.back{align-self:flex-start;text-decoration:none;color:var(--ink);padding:6px 12px 6px 10px;margin-left:-10px;border-radius:999px;transition:background .2s ease}
+@media (hover:hover){.back:hover{background:var(--hair)}}
 h1{font:400 clamp(44px,5.2vw,64px)/.95 var(--serif);letter-spacing:-.01em;margin-top:18px}
 h1 em{color:var(--muted)}
 .lede{margin-top:16px;color:var(--muted);max-width:34ch}
@@ -98,7 +101,7 @@ h1 em{color:var(--muted)}
 <div class="page">
   <aside class="side">
     <header>
-      <p class="mark"><b>anteprime/</b> · siti in lavorazione</p>
+      <p class="mark"><a class="back" href="https://profili-cv.github.io/sebastyan-buryas/#laboratorio">← Sebastyan Buryas</a><span><b>anteprime/</b> · siti in lavorazione</span></p>
       <h1>Il banco<br><em>di lavoro</em></h1>
       <p class="lede">Qui i siti crescono prima di andare online. Sceglietene uno e guardatelo funzionare, anche nella misura del telefono.</p>
     </header>

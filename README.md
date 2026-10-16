@@ -34,6 +34,10 @@ prototipi/
 4. Dal registrar del dominio aggiungi i record DNS indicati da GitHub (A verso gli IP di GitHub Pages per il dominio principale, CNAME per `www`), poi spunta **Enforce HTTPS**.
 5. Nell'`index.html` di `prototipi`, nella lista SITI, metti `stato: "online"` e sostituisci `url` con il nuovo dominio.
 
+## Pulsante di ritorno
+
+Ogni anteprima include `<script src="../banco.js"></script>` prima di `</body>`: mostra in basso a sinistra un pulsante per tornare al banco o al portfolio di Sebastyan. Non compare dentro il monitor del banco. Quando il sito va consegnato, togli quella riga.
+
 ## Aggiungere un sito al banco
 
 In `index.html` copia un blocco della lista `SITI` e cambia nome, tipo, descrizione, url, stato (`bozza`, `anteprima`, `revisione`, `online`) e data. Per linkare direttamente un sito: `https://anteprime-siti.github.io/prototipi/#id-del-sito`.
