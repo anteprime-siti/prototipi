@@ -2,44 +2,218 @@
 <html lang="it">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Prototipi — anteprime siti</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Anteprime · Sebastyan Buryas</title>
 <meta name="robots" content="noindex, nofollow">
+<meta name="description" content="Anteprime dei siti in lavorazione, a cura di Sebastyan Buryas.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Familjen+Grotesk:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-  :root{--bg:#f4f4f2;--ink:#161616;--muted:#777;--line:#dcdcd8;--card:#fff}
-  @media (prefers-color-scheme:dark){:root{--bg:#141414;--ink:#eee;--muted:#999;--line:#2c2c2c;--card:#1c1c1c}}
-  *{box-sizing:border-box;margin:0;padding:0}
-  body{background:var(--bg);color:var(--ink);font-family:ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;line-height:1.6}
-  .wrap{width:min(880px,100% - 32px);margin:0 auto;padding:72px 0}
-  h1{font-size:1.1rem;font-weight:600;letter-spacing:.02em}
-  p.intro{color:var(--muted);font-size:.85rem;margin:8px 0 48px;max-width:60ch}
-  ul{list-style:none;border-top:1px solid var(--line)}
-  li a{display:grid;grid-template-columns:1fr auto;gap:16px;align-items:center;padding:20px 4px;border-bottom:1px solid var(--line);text-decoration:none;color:inherit;transition:background .2s}
-  li a:hover{background:var(--card)}
-  .name{font-size:1rem}
-  .desc{font-size:.8rem;color:var(--muted)}
-  .stato{font-size:.7rem;text-transform:uppercase;letter-spacing:.12em;padding:4px 10px;border:1px solid var(--line);border-radius:99px;white-space:nowrap}
-  .stato.lavori{color:#b5751c;border-color:currentColor}
-  .stato.pronto{color:#3c8a4f;border-color:currentColor}
-  footer{margin-top:48px;font-size:.75rem;color:var(--muted)}
+/* Banco di lavoro: elenco a sinistra, a destra un monitor che mostra il sito vivo, su computer o su telefono */
+:root{
+  --bg:#f3f3f1; --panel:#fbfbfa; --ink:#141414; --muted:#62625e; --line:#d9d9d4; --hair:#e7e7e3;
+  --work:#c2410c; --live:#15803d; --draft:#6b6b66; --focus:#2346d8;
+  --serif:"Instrument Serif",Georgia,serif;
+  --sans:"Familjen Grotesk",ui-sans-serif,system-ui,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+  --gut:max(20px,env(safe-area-inset-left,0px));
+}
+@media (prefers-color-scheme:dark){:root{
+  --bg:#111110; --panel:#191918; --ink:#ededea; --muted:#a3a39d; --line:#2e2e2b; --hair:#232321;
+  --work:#fb923c; --live:#4ade80; --draft:#9b9b95; --focus:#8fa2ff; color-scheme:dark}}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{background:var(--bg);color:var(--ink);font:16px/1.55 var(--sans);-webkit-font-smoothing:antialiased}
+::selection{background:var(--ink);color:var(--bg)}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--focus);outline-offset:3px;border-radius:2px}
+
+.page{min-height:100vh;display:grid;grid-template-columns:minmax(0,440px) minmax(0,1fr)}
+.side{padding:48px 40px 40px var(--gut);display:flex;flex-direction:column;gap:40px;border-right:1px solid var(--line)}
+.stage{position:sticky;top:0;height:100vh;padding:28px max(28px,env(safe-area-inset-right,0px)) 28px 28px;display:flex;flex-direction:column;gap:14px}
+
+.mark{font:500 13px var(--mono);letter-spacing:.02em;color:var(--muted)}
+.mark b{color:var(--ink);font-weight:500}
+h1{font:400 clamp(44px,5.2vw,64px)/.95 var(--serif);letter-spacing:-.01em;margin-top:18px}
+h1 em{color:var(--muted)}
+.lede{margin-top:16px;color:var(--muted);max-width:34ch}
+
+.list{list-style:none;border-top:1px solid var(--line)}
+.item{border-bottom:1px solid var(--line)}
+.item button{all:unset;box-sizing:border-box;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 16px;width:100%;padding:20px 4px 20px 0;cursor:pointer}
+.item button:focus-visible{outline:2px solid var(--focus);outline-offset:-2px}
+.name{font:400 30px/1.05 var(--serif);transition:transform .35s cubic-bezier(.23,1,.32,1)}
+.item[aria-current="true"] .name{font-style:italic}
+@media (hover:hover) and (pointer:fine){.item button:hover .name{transform:translateX(6px)}}
+.kind{grid-column:1;font-size:14px;color:var(--muted)}
+.state{grid-column:2;grid-row:1;align-self:center;display:inline-flex;align-items:center;gap:8px;font:500 11px var(--mono);text-transform:uppercase;letter-spacing:.08em;color:var(--c)}
+.state::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}
+.state.work::before{animation:pulse 2.4s ease-in-out infinite}
+@keyframes pulse{50%{opacity:.25}}
+
+.detail{display:grid;gap:18px;padding:0 0 24px}
+.item:not([aria-current="true"]) .detail{display:none}
+.detail p{font-size:15px;max-width:40ch}
+.steps{list-style:none;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+.steps li{font:500 10.5px var(--mono);text-transform:uppercase;letter-spacing:.06em;color:var(--muted);padding-top:9px;border-top:2px solid var(--hair)}
+.steps li.done{border-color:var(--ink);color:var(--ink)}
+.steps li.now{border-color:var(--c);color:var(--c)}
+.facts{display:flex;flex-wrap:wrap;gap:4px 18px;font:400 12px var(--mono);color:var(--muted)}
+.open{justify-self:start;display:inline-flex;align-items:center;gap:10px;padding:11px 18px;border:1px solid var(--ink);border-radius:999px;text-decoration:none;font-weight:500;font-size:15px;transition:background .2s ease,color .2s ease}
+@media (hover:hover){.open:hover{background:var(--ink);color:var(--bg)}}
+.open:active{transform:scale(.97)}
+
+.foot{margin-top:auto;display:grid;gap:10px;font-size:14px;color:var(--muted)}
+.foot a{color:var(--ink);text-underline-offset:3px}
+.mail{font-family:var(--mono);font-size:13px;color:var(--ink);user-select:all}
+
+/* monitor */
+.bar{display:flex;align-items:center;gap:12px}
+.url{flex:1;min-width:0;font:400 12.5px var(--mono);color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:999px;padding:3px;gap:2px}
+.seg button{all:unset;cursor:pointer;font:500 12px var(--mono);padding:6px 12px;border-radius:999px;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.seg button:focus-visible{outline:2px solid var(--focus)}
+.screen{position:relative;flex:1;min-height:0;display:grid;place-items:center;background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.frame{position:relative;overflow:hidden;background:#fff;transition:width .45s cubic-bezier(.23,1,.32,1),height .45s cubic-bezier(.23,1,.32,1),border-radius .45s}
+.phone .frame{border-radius:28px;box-shadow:0 0 0 8px var(--ink),0 24px 48px -24px rgba(0,0,0,.45)}
+.frame iframe{position:absolute;top:0;left:0;border:0;transform-origin:0 0;background:#fff}
+.veil{position:absolute;inset:0;display:grid;place-items:center;font:400 13px var(--mono);color:var(--muted);background:var(--panel);transition:opacity .4s ease}
+.veil.gone{opacity:0;pointer-events:none}
+.hint{font-size:13px;color:var(--muted)}
+
+@media (max-width:900px){
+  .page{grid-template-columns:minmax(0,1fr);gap:32px;padding:36px max(20px,env(safe-area-inset-right,0px)) 40px var(--gut)}
+  .side{display:contents}
+  .side>header{order:1} .list{order:2} .stage{order:3} .foot{order:4}
+  .stage{position:static;height:auto;padding:0}
+  .screen{height:min(78vh,720px);flex:none}
+  .foot{margin-top:0}
+}
+@media (prefers-reduced-motion:reduce){*,*::before{animation:none!important;transition:none!important}}
 </style>
 </head>
 <body>
-<div class="wrap">
-  <h1>prototipi/</h1>
-  <p class="intro">Anteprime dei siti in lavorazione. Ogni progetto, una volta completato, viene spostato su un repository e un dominio propri, gestiti dal cliente.</p>
-  <ul>
-    <!-- Aggiungi qui un <li> per ogni nuovo sito. Stato: "lavori" oppure "pronto" -->
-    <li><a href="artista-pittore/">
-      <div><div class="name">Artista pittore</div><div class="desc">Fascicolo di tavole tecniche · quote · vista in scala reale</div></div>
-      <span class="stato lavori">in lavorazione</span>
-    </a></li>
-    <li><a href="artista-pittore/galleria-classica.html">
-      <div><div class="name">Artista pittore — versione A</div><div class="desc">Galleria classica (alternativa scartata, tenuta per confronto)</div></div>
-      <span class="stato">bozza</span>
-    </a></li>
-  </ul>
-  <footer>Pagina non indicizzata dai motori di ricerca.</footer>
+<div class="page">
+  <aside class="side">
+    <header>
+      <p class="mark"><b>anteprime/</b> · siti in lavorazione</p>
+      <h1>Il banco<br><em>di lavoro</em></h1>
+      <p class="lede">Qui i siti crescono prima di andare online. Sceglietene uno e guardatelo funzionare, anche nella misura del telefono.</p>
+    </header>
+
+    <ul class="list" id="list" aria-label="Siti"></ul>
+
+    <footer class="foot">
+      <p>A cura di <a href="https://profili-cv.github.io/sebastyan-buryas/">Sebastyan Buryas</a>, media artist a Torino.</p>
+      <p>Per un sito nuovo, una modifica o un'idea: <span class="mail">sebiburyas.sb12@gmail.com</span></p>
+      <p>Pagina privata, non indicizzata dai motori di ricerca.</p>
+    </footer>
+  </aside>
+
+  <main class="stage" aria-label="Anteprima dal vivo">
+    <div class="bar">
+      <span class="url" id="url"></span>
+      <div class="seg" role="group" aria-label="Dimensione schermo">
+        <button type="button" data-dev="desk" aria-pressed="true">Computer</button>
+        <button type="button" data-dev="phone" aria-pressed="false">Telefono</button>
+      </div>
+    </div>
+    <div class="screen" id="screen">
+      <div class="frame" id="frame">
+        <iframe id="view" title="Anteprima del sito" loading="lazy"></iframe>
+        <div class="veil" id="veil">Carico l'anteprima…</div>
+      </div>
+    </div>
+    <p class="hint">L'anteprima è il sito vero: si può scorrere e cliccare.</p>
+  </main>
 </div>
+
+<script>
+/* ==== Elenco dei siti ====
+   Per aggiungerne uno copia un blocco e cambia i campi.
+   stato: "bozza" | "anteprima" | "revisione" | "online"           */
+const SITI = [
+  {
+    id: "artista-pittore",
+    nome: "Artista pittore",
+    tipo: "Sito su richiesta",
+    descrizione: "Le opere di un ingegnere e pittore raccolte come un fascicolo di tavole tecniche: quote, relazione e vista dei quadri in scala reale.",
+    url: "artista-pittore/",
+    stato: "anteprima",
+    aggiornato: "ottobre 2026"
+  },
+  {
+    id: "artista-pittore-a",
+    nome: "Artista pittore, versione A",
+    tipo: "Alternativa per confronto",
+    descrizione: "La prima strada, una galleria classica: scartata, ma tenuta per confrontarla con la versione a tavole.",
+    url: "artista-pittore/galleria-classica.html",
+    stato: "bozza",
+    aggiornato: "ottobre 2026"
+  }
+];
+
+const FASI = ["bozza","anteprima","revisione","online"];
+const NOMI_FASI = {bozza:"Bozza",anteprima:"Anteprima",revisione:"Revisione",online:"Online"};
+const COLORE = s => s==="online" ? "var(--live)" : s==="bozza" ? "var(--draft)" : "var(--work)";
+const ETICHETTA = s => s==="online" ? "online" : s==="bozza" ? "bozza" : "in lavorazione";
+
+const list = document.getElementById("list"), view = document.getElementById("view"),
+      frame = document.getElementById("frame"), screen = document.getElementById("screen"),
+      veil = document.getElementById("veil"), urlEl = document.getElementById("url");
+let current = null, device = "desk";
+
+list.innerHTML = SITI.map(s => {
+  const k = FASI.indexOf(s.stato);
+  return `<li class="item" data-id="${s.id}" style="--c:${COLORE(s.stato)}">
+    <button type="button" aria-controls="d-${s.id}">
+      <span class="name">${s.nome}</span>
+      <span class="state ${s.stato==="online"?"":"work"}">${ETICHETTA(s.stato)}</span>
+      <span class="kind">${s.tipo}</span>
+    </button>
+    <div class="detail" id="d-${s.id}">
+      <p>${s.descrizione}</p>
+      <ol class="steps" aria-label="Avanzamento">${FASI.map((f,i)=>`<li class="${i<k?"done":i===k?"now":""}"${i===k?' aria-current="step"':""}>${NOMI_FASI[f]}</li>`).join("")}</ol>
+      <p class="facts"><span>Aggiornato: ${s.aggiornato}</span></p>
+      <a class="open" href="${s.url}" target="_blank" rel="noopener">Apri a schermo intero <span aria-hidden="true">↗</span></a>
+    </div>
+  </li>`;
+}).join("");
+
+function fit(){
+  const W = screen.clientWidth - 48, H = screen.clientHeight - 48;
+  const vw = device==="phone" ? 390 : 1440, vh = device==="phone" ? 844 : 900;
+  const s = Math.min(W/vw, H/vh, 1);
+  frame.style.width = Math.round(vw*s)+"px"; frame.style.height = Math.round(vh*s)+"px";
+  view.style.width = vw+"px"; view.style.height = vh+"px"; view.style.transform = `scale(${s})`;
+}
+function select(id){
+  const s = SITI.find(x=>x.id===id); if(!s) return;
+  current = s;
+  document.querySelectorAll(".item").forEach(li=>{
+    const on = li.dataset.id===id;
+    li.setAttribute("aria-current", on);
+    li.querySelector("button").setAttribute("aria-expanded", on);
+  });
+  urlEl.textContent = new URL(s.url, location.href).href.replace(/^https?:\/\//,"");
+  veil.classList.remove("gone");
+  view.src = s.url;
+}
+view.addEventListener("load",()=>veil.classList.add("gone"));
+list.addEventListener("click",e=>{const li=e.target.closest(".item"); if(li && e.target.closest("button")) select(li.dataset.id)});
+document.querySelectorAll(".seg button").forEach(b=>b.addEventListener("click",()=>{
+  device=b.dataset.dev;
+  document.querySelectorAll(".seg button").forEach(x=>x.setAttribute("aria-pressed",x===b));
+  screen.classList.toggle("phone",device==="phone"); fit();
+}));
+if (matchMedia("(max-width:900px)").matches){ device="phone"; screen.classList.add("phone");
+  document.querySelectorAll(".seg button").forEach(x=>x.setAttribute("aria-pressed",x.dataset.dev==="phone")); }
+new ResizeObserver(fit).observe(screen);
+const fromHash = location.hash.slice(1);
+select(SITI.some(s=>s.id===fromHash) ? fromHash : SITI[0].id);
+fit();
+</script>
 </body>
 </html>

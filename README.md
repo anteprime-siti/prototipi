@@ -13,7 +13,7 @@ Organizzazione GitHub: **anteprime-siti** (creata dall'account sebabreak).
 
 ```
 prototipi/
-├── index.html          ← elenco delle anteprime (aggiungere un <li> per ogni sito)
+├── index.html          ← il banco: elenco + anteprima dal vivo (aggiungere un sito nella lista SITI dello <script>)
 ├── .nojekyll           ← dice a GitHub Pages di servire i file così come sono
 └── artista-pittore/
     ├── index.html      ← il sito (dati delle opere in cima allo <script>)
@@ -32,7 +32,11 @@ prototipi/
 2. Copia lì il contenuto della sottocartella (l'`index.html` deve stare nella root).
 3. Attiva GitHub Pages e in Settings → Pages → Custom domain inserisci il dominio (es. `nomecognome.it`). GitHub crea il file `CNAME`.
 4. Dal registrar del dominio aggiungi i record DNS indicati da GitHub (A verso gli IP di GitHub Pages per il dominio principale, CNAME per `www`), poi spunta **Enforce HTTPS**.
-5. Nell'`index.html` di `prototipi` segna il sito come "pronto" o sostituisci il link con il nuovo dominio.
+5. Nell'`index.html` di `prototipi`, nella lista SITI, metti `stato: "online"` e sostituisci `url` con il nuovo dominio.
+
+## Aggiungere un sito al banco
+
+In `index.html` copia un blocco della lista `SITI` e cambia nome, tipo, descrizione, url, stato (`bozza`, `anteprima`, `revisione`, `online`) e data. Per linkare direttamente un sito: `https://anteprime-siti.github.io/prototipi/#id-del-sito`.
 
 ## Note
 - Foto dei quadri: JPG, lato lungo circa 2000 px, sotto i 500 KB ciascuna.
