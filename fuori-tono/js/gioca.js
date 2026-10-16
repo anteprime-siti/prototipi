@@ -80,4 +80,5 @@
   document.addEventListener('visibilitychange', () => { if (!document.hidden && joined && (!conn || !conn.open)) connect(); });
 
   if (code && me.name && q.get('r')) { connecting(); connect(); } else showJoin();
+  FT.keepAwake();
 })();

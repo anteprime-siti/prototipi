@@ -31,6 +31,7 @@
   const alive = () => G() ? G().ids.filter(id => G().alive[id]) : [];
   const isImp = id => G() && G().imps.includes(id);
   const joinUrl = () => { const u = new URL('gioca.html', location.href); u.search = `?r=${S.code}${FT.phParam()}`; return u.toString(); };
+  const homeUrl = () => new URL('./', location.href).toString().replace(/^https?:\/\//, '').replace(/\/$/, '');
 
   // ---------------- rete ----------------
   function startPeer() {
@@ -104,6 +105,8 @@
         if (S.phase === 'vote' && g.votes[pid]) { delete g.votes[pid]; clearTimeout(voteTimer); update(); } break;
       case 'guess':
         if (S.phase === 'guess' && pid === g.guesser && !g.guessText) { g.guessText = String(d.text || '').slice(0, 40); update(); } break;
+      case 'done':
+        if (S.phase === 'clues' && g && g.order[g.turnIdx] === pid) nextTurn(); break;
       case 'leave': removePlayer(pid, true); break;
     }
   }
@@ -352,7 +355,8 @@
         <footer class="h-bar"><div>${catChip()}</div><div class="acts"><button class="btn danger" data-a="tally">Chiudi votazione</button></div></footer>`;
     } else if (S.phase === 'result') {
       const r = g.result, e = r.elim && P(r.elim);
-      h = `<section class="stage"><div class="grid">${Object.keys(r.counts).filter(P).map(id => card(P(id), `<span class="votes">${r.counts[id]}</span>`, { av: { dead: id === r.elim } })).join('')}</div>
+      const by = id => Object.keys(g.votes).filter(v => g.votes[v] === id && P(v)).map(v => `<span class="vby" title="${esc(P(v).name)}">${avatar(P(v))}</span>`).join('');
+      h = `<section class="stage"><div class="grid">${Object.keys(r.counts).filter(P).map(id => card(P(id), `<span class="votes">${r.counts[id]}</span>`, { av: { dead: id === r.elim }, under: `<div class="vbys">${by(id)}</div>` })).join('')}</div>
         ${e ? `<h1 class="big rise">${esc(e.name)} è fuori</h1><p class="stampbig ${r.wasImp ? 'red' : ''} late">${r.wasImp ? 'ERA L’IMPOSTORE' : 'ERA INNOCENTE'}</p>`
           : `<h1 class="big rise">Pareggio</h1><p class="sub">Nessuno viene eliminato.</p>`}</section>
         <footer class="h-bar"><div></div><div class="acts"><button class="btn primary" data-a="after">Continua</button></div></footer>`;
@@ -384,7 +388,7 @@
     const err = canStart(), ps = S.players, scored = ps.some(p => p.score > 0);
     return `<section class="lobby">
       <div class="joincard"><p class="kicker">Inquadra per entrare</p><div class="qr" id="qr"></div>
-        <p class="kicker">oppure vai su <b>${esc(joinUrl().replace(/^https?:\/\//, '').replace(/\?.*$/, ''))}</b> e scrivi</p><p class="code">${S.code}</p></div>
+        <p class="kicker">oppure apri <b>${esc(homeUrl())}</b> e scrivi</p><p class="code">${S.code}</p></div>
       <div class="roster"><div class="roster-h"><h2>Sospettati <span class="mono dim">${ps.length}/${MAXP}</span></h2>
         ${S.localId ? '' : '<button class="btn ghost sm" data-a="joinme">+ Gioco anch’io</button>'}</div>
         ${ps.length ? `<div class="grid left">${ps.map(p => card(p, p.local ? '<span class="you">TU</span>' : '', { act: 'edit', under: scored ? `<p class="mono dim small">${p.score} pt</p>` : '' })).join('')}</div>
@@ -503,5 +507,6 @@
   if (S.localId) attachLocal();
   render();
   startPeer();
+  FT.keepAwake();
   window.__FT_HOST = { get S() { return S; } };
 })();

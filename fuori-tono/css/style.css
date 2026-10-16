@@ -261,3 +261,25 @@ details.peek[open] summary{margin-bottom:10px}
 
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
 .pl-top a{display:inline-flex;align-items:center;min-height:44px}
+
+/* Chi ha votato chi (schermata risultato) */
+.vbys { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; min-height: 22px; margin-top: 6px; max-width: 120px; }
+.vby .av { width: 22px; height: 22px; display: block; }
+
+/* Regole sul telefono */
+.rules { margin-top: 18px; border: 1px solid var(--line, #2A2A30); border-radius: 14px; padding: 4px 16px; }
+.rules summary { cursor: pointer; padding: 12px 0; font-weight: 600; list-style: none; }
+.rules summary::after { content: "+"; float: right; font-weight: 400; }
+.rules[open] summary::after { content: "−"; }
+.rules ol { margin: 0 0 14px; padding-left: 18px; display: grid; gap: 10px; color: var(--dim, #A09DA8); font-size: 14px; line-height: 1.45; }
+.rules b { color: var(--ink, #F4F1EA); }
+.spot.me .btn { margin-top: 18px; }
+
+/* Host su telefono: le schede Tavolo / La mia carta vanno su una riga intera sotto il logo */
+@media (max-width: 640px) {
+  .h-top { flex-wrap: wrap; row-gap: 10px; }
+  .h-tools { flex: 1; justify-content: flex-end; flex-wrap: wrap; gap: 8px; }
+  .h-tools .tabs { order: 9; flex: 0 0 100%; display: grid; grid-template-columns: 1fr 1fr; }
+  .h-tools .tabs button { white-space: nowrap; min-height: 40px; }
+  .h-tools .status, .h-tools [data-a="full"] { display: none; }
+}

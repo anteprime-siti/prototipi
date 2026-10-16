@@ -50,7 +50,9 @@ window.FT = (() => {
     const q = new URLSearchParams(location.search);
     const ph = q.get('ph');
     const o = { debug: 1, config: { iceServers: [
-      { urls: 'stun:stun.l.google.com:19302' }, { urls: 'stun:stun1.l.google.com:19302' }, { urls: 'stun:global.stun.twilio.com:3478' }
+      { urls: 'stun:stun.l.google.com:19302' }, { urls: 'stun:stun1.l.google.com:19302' }, { urls: 'stun:global.stun.twilio.com:3478' },
+      // relay gratuiti di PeerJS: servono quando i telefoni sono su reti diverse (4G, Wi-Fi chiusi)
+      { urls: ['turn:eu-0.turn.peerjs.com:3478', 'turn:us-0.turn.peerjs.com:3478'], username: 'peerjs', credential: 'peerjsp' }
     ] } };
     if (ph) { const [h, p] = ph.split(':'); Object.assign(o, { host: h, port: +p || 9000, path: '/', secure: false }); }
     return o;
@@ -92,6 +94,14 @@ window.FT = (() => {
     });
   }
 
+  // Tiene lo schermo acceso durante la partita (dove il browser lo permette)
+  let lock = null;
+  async function keepAwake() {
+    try { if ('wakeLock' in navigator && !lock && document.visibilityState === 'visible') { lock = await navigator.wakeLock.request('screen'); lock.addEventListener('release', () => { lock = null; }); } } catch (e) { lock = null; }
+  }
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') keepAwake(); });
+  ['pointerdown', 'keydown'].forEach(ev => document.addEventListener(ev, keepAwake, { passive: true }));
+
   const IMP_MODES = {
     nothing: { t: 'Nessun indizio', d: 'Sa di essere l’impostore e non vede niente.' },
     category: { t: 'Solo la categoria', d: 'Sa di essere l’impostore e conosce solo il tema.' },
@@ -99,5 +109,5 @@ window.FT = (() => {
     undercover: { t: 'Undercover', d: 'Riceve una parola simile e non sa di essere l’impostore.' }
   };
 
-  return { PREFIX, COLORS, ICONS, ICON_KEYS, glyph, avatar, logo, peerOpts, phParam, esc, norm, store, rid, shuffle, profile, shrinkPhoto, IMP_MODES, photos: {} };
+  return { PREFIX, COLORS, ICONS, ICON_KEYS, glyph, avatar, logo, peerOpts, phParam, esc, norm, store, rid, shuffle, profile, shrinkPhoto, IMP_MODES, keepAwake, photos: {} };
 })();

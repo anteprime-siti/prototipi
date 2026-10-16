@@ -114,7 +114,11 @@
         return dossier(`<div class="ds-top"><span class="mono">SOSPETTATO</span><span class="mono">#${String(s.players.findIndex(p => p.id === me.id) + 1).padStart(2, '0')}</span></div>
           <div class="ds-id"><div class="avbig">${avatar(me)}</div><div><p class="word sm">${esc(me.name)}</p>${me.score ? `<p class="mono dim">${me.score} punt${me.score === 1 ? 'o' : 'i'}</p>` : ''}</div></div>`)
           + `<p class="dim">${me.waiting ? 'Partita in corso: entri dalla prossima.' : `Sei dentro. Siete in ${s.players.length}: si parte dallo schermo dell’host.`}</p>
-          <div class="row2"><button class="btn ghost" data-a="edit">Modifica profilo</button><button class="btn ghost" data-a="askleave">Esci</button></div>`;
+          <div class="row2"><button class="btn ghost" data-a="edit">Modifica profilo</button><button class="btn ghost" data-a="askleave">Esci</button></div>
+          <details class="rules"><summary>Come si gioca</summary><ol>
+            <li><b>Leggi la carta.</b> Tieni premuto per vedere la parola segreta, senza farla vedere. L’impostore non la conosce.</li>
+            <li><b>Una parola a testa.</b> Quando tocca a te, dilla ad alta voce, poi premi «Ho detto la mia».</li>
+            <li><b>Vota.</b> Scegli chi è fuori tono e conferma. Se scoprite l’impostore, può ancora vincere indovinando la parola.</li></ol></details>`;
       }
       if (s.phase === 'reveal') return `<p class="mono dim center">${s.seen && s.revealOnce ? 'In attesa degli altri' : 'La tua carta segreta'}</p>` + secretCard(s.secret);
       if (me.gone) return `<h1 class="title">Sei fuori dalla partita</h1><p class="dim">Rientrerai dalla prossima.</p>`;
@@ -124,7 +128,7 @@
       if (s.phase === 'clues') {
         const sp = P(s.speaker), mine = s.speaker === me.id;
         const left = timerBase ? Math.max(0, Math.ceil((timerBase - Date.now()) / 1000)) : null;
-        return (mine ? `<div class="spot me"><p class="mono">È IL TUO TURNO</p><h1 class="title xl">Parla tu</h1><p>Di’ una parola ad alta voce.</p>${left != null ? `<p class="count mono" id="left">${left}</p>` : ''}</div>`
+        return (mine ? `<div class="spot me"><p class="mono">È IL TUO TURNO</p><h1 class="title xl">Parla tu</h1><p>Di’ una parola ad alta voce.</p>${left != null ? `<p class="count mono" id="left">${left}</p>` : ''}<button class="btn primary wide" data-a="done">Ho detto la mia</button></div>`
           : `<div class="spot"><div class="avbig">${avatar(sp)}</div><p class="mono dim">STA PARLANDO</p><h1 class="title">${esc(sp.name)}</h1></div>`)
           + `<p class="mono dim center">Giro ${s.round} di ${s.clueRounds}</p><ol class="queue">${s.order.map((id, i) => `<li class="${i < s.turnIdx ? 'done' : i === s.turnIdx ? 'now' : ''}">${esc(P(id).name)}</li>`).join('')}</ol>`
           + (!s.revealOnce && s.secret ? `<details class="peek"><summary>Rileggi la tua carta</summary>${secretCard(s.secret)}</details>` : '');
@@ -188,6 +192,7 @@
       e.stopPropagation();
       switch (b.dataset.a) {
         case 'seen': send({ t: 'seen' }); break;
+        case 'done': send({ t: 'done' }); buzz(30); b.disabled = true; break;
         case 'pick': pick = b.dataset.id; render(); break;
         case 'unpick': pick = null; render(); break;
         case 'vote': if (pick) { send({ t: 'vote', target: pick }); pick = null; buzz(40); } break;
