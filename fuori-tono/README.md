@@ -17,7 +17,7 @@ Online: `https://anteprime-siti.github.io/prototipi/fuori-tono/`
 - Voto in due passaggi: si sceglie il sospettato, poi **Conferma** o **Annulla**; dopo il voto c’è **Cambia voto**.
 
 ## Da sapere
-- Serve internet su tutti i dispositivi (collegamento iniziale tramite il server gratuito di PeerJS; librerie da cdn.jsdelivr.net).
+- Serve internet su tutti i dispositivi (collegamento iniziale tramite il server gratuito di PeerJS; librerie PeerJS e QR caricate dalla cartella lib/).
 - Lo schermo dell’host deve restare aperto; se si ricarica, stanza e giocatori vengono ripresi.
 - Meglio tutti sullo stesso Wi‑Fi: con alcune reti mobili molto chiuse il collegamento diretto può non riuscire.
 - Parole e temi: `js/parole.js`.

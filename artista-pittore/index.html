@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
 <title>Nome Cognome — Fascicolo opere</title>
 <meta name="description" content="Dipinti di Nome Cognome, ingegnere e pittore. Tavole, relazione, esposizioni e contatti.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -235,6 +236,15 @@
   @media (prefers-reduced-motion:reduce){
     *{transition:none!important;animation:none!important;scroll-behavior:auto!important}
     .q .art img{opacity:1}.build{display:none}.tav{opacity:1;transform:none}
+  }
+  a[href="#top"]{display:inline-block;padding:10px 0;margin:-10px 0}
+  /* Leggibilità e tocco: etichette tecniche almeno a 11px, comandi alti almeno 40px sui touch */
+  .lbl,.hero-cap,.cart .lbl,th,.st,.seg button,.scale-note,.tav-head,.portrait,.portrait-cap,.lb-nav button,.lb-close,.lb-count{font-size:11px}
+  .sh .n{font-size:12px}
+  @media (pointer:coarse){
+    nav.wrap a{display:inline-flex;align-items:center;min-height:40px}
+    .seg button{min-height:40px}
+    .lb-nav button,.lb-close{min-height:44px}
   }
 </style>
 </head>
