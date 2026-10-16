@@ -3,222 +3,404 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Nome Cognome — Opere</title>
-<meta name="description" content="Dipinti di Nome Cognome. Galleria delle opere, biografia e contatti.">
+<title>Nome Cognome — Fascicolo opere</title>
+<meta name="description" content="Dipinti di Nome Cognome, ingegnere e pittore. Tavole, relazione, esposizioni e contatti.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
   :root{
-    --wall:#f6f3ee;        /* parete della galleria */
-    --paper:#fffdf9;
-    --ink:#1f1d1a;
-    --muted:#6f6a62;
-    --line:#ddd6cb;
-    --accent:#a2462b;      /* terra di Siena: cambialo in base ai quadri */
-    --serif:"Cormorant Garamond", Georgia, serif;
-    --sans:"Inter", system-ui, sans-serif;
+    --paper:#f2efe6;          /* carta da lucido */
+    --paper-2:#faf8f2;
+    --ink:#1e2b3a;            /* inchiostro di china blu-nero */
+    --ink-soft:#5b6673;
+    --rule:rgba(30,43,58,.16);
+    --grid-1:rgba(30,43,58,.035);
+    --grid-2:rgba(30,43,58,.07);
+    --red:#c2412d;            /* matita rossa delle correzioni */
+    --serif:"Instrument Serif", Georgia, serif;
+    --mono:"IBM Plex Mono", ui-monospace, Consolas, monospace;
+    --m:18px;                 /* margine del foglio */
+    --boxh:380px;             /* altezza massima delle opere in vista uniforme */
   }
   *{box-sizing:border-box;margin:0;padding:0}
-  html{scroll-behavior:smooth}
-  body{background:var(--wall);color:var(--ink);font-family:var(--sans);font-weight:300;line-height:1.65;-webkit-font-smoothing:antialiased}
+  html{scroll-behavior:smooth;scroll-padding-top:90px}
+  body{
+    background-color:var(--paper);color:var(--ink);font-family:var(--mono);font-weight:300;font-size:14px;line-height:1.7;
+    background-image:
+      linear-gradient(var(--grid-2) 1px,transparent 1px),linear-gradient(90deg,var(--grid-2) 1px,transparent 1px),
+      linear-gradient(var(--grid-1) 1px,transparent 1px),linear-gradient(90deg,var(--grid-1) 1px,transparent 1px);
+    background-size:50px 50px,50px 50px,10px 10px,10px 10px;
+    -webkit-font-smoothing:antialiased;
+  }
   img{display:block;max-width:100%}
   a{color:inherit}
-  .wrap{width:min(1180px,100% - 32px);margin-inline:auto}
+  button{font:inherit;color:inherit}
+  .wrap{width:min(1160px,100% - 80px);margin-inline:auto}
+  .lbl{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-soft)}
 
-  /* NAV */
-  header{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--wall) 88%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid transparent;transition:border-color .3s}
-  header.scrolled{border-color:var(--line)}
-  nav{display:flex;align-items:center;justify-content:space-between;height:68px}
-  .brand{font-family:var(--serif);font-size:1.45rem;letter-spacing:.02em;text-decoration:none}
-  nav ul{display:flex;gap:28px;list-style:none}
-  nav ul a{text-decoration:none;font-size:.78rem;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);transition:color .2s}
-  nav ul a:hover{color:var(--ink)}
+  /* ---------- CORNICE DEL FOGLIO ---------- */
+  .sheet{position:fixed;inset:var(--m);border:1px solid var(--ink);box-shadow:0 0 0 60px var(--paper);pointer-events:none;z-index:30}
+  .sheet::after{content:"";position:absolute;inset:4px;border:1px solid var(--rule)}
+  .zones{position:fixed;z-index:31;pointer-events:none;font-size:9px;color:var(--ink-soft);display:flex;justify-content:space-around}
+  .zones.top{top:2px;left:var(--m);right:var(--m)}
+  .zones.bot{bottom:2px;left:var(--m);right:var(--m)}
+  .zones.lft,.zones.rgt{top:var(--m);bottom:var(--m);flex-direction:column;align-items:center;width:var(--m)}
+  .zones.lft{left:0}.zones.rgt{right:0}
 
-  /* HERO */
-  .hero{display:grid;grid-template-columns:1fr 1.1fr;gap:64px;align-items:center;padding:72px 0 96px}
-  .eyebrow{font-size:.75rem;letter-spacing:.22em;text-transform:uppercase;color:var(--accent)}
-  .hero h1{font-family:var(--serif);font-weight:400;font-size:clamp(2.8rem,6vw,5rem);line-height:1.02;margin:18px 0 22px}
-  .hero h1 em{font-style:italic;color:var(--muted)}
-  .hero p{max-width:40ch;color:var(--muted)}
-  .btn{display:inline-block;margin-top:32px;padding:13px 26px;border:1px solid var(--ink);text-decoration:none;font-size:.78rem;letter-spacing:.16em;text-transform:uppercase;transition:background .25s,color .25s}
-  .btn:hover{background:var(--ink);color:var(--wall)}
-  .hero figure{background:var(--paper);padding:clamp(14px,2.5vw,28px);box-shadow:0 30px 60px -30px rgba(40,30,20,.35);cursor:zoom-in}
-  .hero figcaption{margin-top:14px;font-size:.8rem;color:var(--muted)}
-  .hero figcaption b{font-family:var(--serif);font-size:1.05rem;font-weight:500;font-style:italic;color:var(--ink)}
+  /* ---------- INTESTAZIONE ---------- */
+  header{position:sticky;top:var(--m);z-index:20;background:var(--paper);border-bottom:1px solid var(--rule)}
+  nav{display:flex;align-items:center;justify-content:space-between;gap:16px;height:60px}
+  .brand{text-decoration:none;font-size:11px;letter-spacing:.14em;text-transform:uppercase}
+  .brand b{font-weight:500}
+  nav ul{display:flex;gap:26px;list-style:none}
+  nav ul a{text-decoration:none;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-soft);transition:color .2s}
+  nav ul a:hover{color:var(--red)}
+  nav ul a span{color:var(--red);margin-right:4px}
 
-  /* SEZIONI */
-  section{padding:96px 0;border-top:1px solid var(--line)}
-  .sec-head{display:flex;justify-content:space-between;align-items:end;gap:24px;flex-wrap:wrap;margin-bottom:48px}
-  h2{font-family:var(--serif);font-weight:400;font-size:clamp(2.2rem,4vw,3.2rem);line-height:1.1}
-  .filters{display:flex;gap:6px;flex-wrap:wrap}
-  .filters button{font:inherit;font-size:.74rem;letter-spacing:.12em;text-transform:uppercase;background:none;border:1px solid var(--line);color:var(--muted);padding:8px 14px;cursor:pointer;transition:all .2s}
-  .filters button:hover{color:var(--ink);border-color:var(--ink)}
-  .filters button.on{background:var(--ink);border-color:var(--ink);color:var(--wall)}
+  /* ---------- QUOTE (linee di misura) ---------- */
+  .q{position:relative;margin:30px 34px 14px 0}
+  .q .art{position:relative;overflow:hidden;background:var(--paper-2)}
+  .q .art img{width:100%;height:100%;object-fit:cover;aspect-ratio:var(--ar)}
+  .qh,.qv{position:absolute;color:var(--ink);font-size:10px;letter-spacing:.06em}
+  .qh{left:0;right:0;top:-18px;height:1px;background:currentColor}
+  .qv{top:0;bottom:0;right:-20px;width:1px;background:currentColor}
+  .qh::before,.qh::after,.qv::before,.qv::after{content:"";position:absolute;background:currentColor}
+  .qh::before,.qh::after{top:-5px;width:1px;height:11px;transform:rotate(45deg)}
+  .qh::before{left:0}.qh::after{right:0}
+  .qv::before,.qv::after{left:-5px;height:1px;width:11px;transform:rotate(45deg)}
+  .qv::before{top:0}.qv::after{bottom:0}
+  .qh span,.qv span{position:absolute;background:var(--paper);padding:0 6px;white-space:nowrap}
+  .qh span{left:50%;top:-8px;transform:translateX(-50%)}
+  .qv span{top:50%;left:-1px;transform:translate(-50%,-50%) rotate(-90deg)}
+  /* linee di richiamo */
+  .q .ext{position:absolute;inset:-22px -24px 0 0;pointer-events:none;
+    background:
+      linear-gradient(var(--rule),var(--rule)) left top/1px 22px no-repeat,
+      linear-gradient(var(--rule),var(--rule)) calc(100% - 24px) top/1px 22px no-repeat,
+      linear-gradient(90deg,var(--rule),var(--rule)) right 22px/24px 1px no-repeat,
+      linear-gradient(90deg,var(--rule),var(--rule)) right bottom/24px 1px no-repeat}
+  /* costruzione: rettangolo e diagonali che si disegnano */
+  .build{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible}
+  .build *{fill:none;stroke:var(--red);stroke-width:1;vector-effect:non-scaling-stroke;stroke-dasharray:1;stroke-dashoffset:1}
+  .q .art img{opacity:0}
+  .q.drawn .art img{opacity:1;transition:opacity .9s .55s}
+  .q.drawn .build *{animation:draw .8s ease forwards}
+  .q.drawn .build .d{animation:draw .8s .15s ease forwards,fade .6s 1.4s forwards}
+  @keyframes draw{to{stroke-dashoffset:0}}
+  @keyframes fade{to{opacity:0}}
+  /* crocini di registro */
+  .reg{position:absolute;width:14px;height:14px;pointer-events:none}
+  .reg::before,.reg::after{content:"";position:absolute;background:var(--ink)}
+  .reg::before{left:6px;top:0;width:1px;height:14px}.reg::after{top:6px;left:0;height:1px;width:14px}
 
-  /* GALLERIA (masonry) */
-  .gallery{columns:3 300px;column-gap:40px}
-  .work{break-inside:avoid;margin-bottom:48px;cursor:zoom-in;opacity:0;transform:translateY(16px);transition:opacity .6s,transform .6s}
-  .work.in{opacity:1;transform:none}
-  .work .frame{background:var(--paper);padding:14px;box-shadow:0 18px 40px -26px rgba(40,30,20,.4);transition:transform .35s,box-shadow .35s}
-  .work:hover .frame{transform:translateY(-4px);box-shadow:0 26px 50px -26px rgba(40,30,20,.5)}
-  .label{margin-top:14px;padding-left:12px;border-left:2px solid var(--accent)}
-  .label .t{font-family:var(--serif);font-size:1.2rem;font-style:italic}
-  .label .m{font-size:.78rem;color:var(--muted)}
-  .sold{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--accent);margin-left:6px;vertical-align:middle}
+  /* ---------- APERTURA ---------- */
+  .hero{display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:end;padding:64px 0 56px}
+  .doc{display:flex;gap:20px;flex-wrap:wrap}
+  .hero h1{font-family:var(--serif);font-weight:400;font-size:clamp(3.2rem,8vw,6.6rem);line-height:.92;margin:26px 0 20px;letter-spacing:-.01em}
+  .hero h1 i{color:var(--red)}
+  .hero .lead{font-size:13px;max-width:44ch;color:var(--ink-soft)}
+  .hero-art{position:relative;max-width:460px;justify-self:end;width:100%;cursor:zoom-in}
+  .hero-art .reg.a{left:-26px;top:-36px}.hero-art .reg.b{right:-30px;bottom:-8px}
+  .hero-cap{font-size:10px;letter-spacing:.08em;color:var(--ink-soft);margin-top:4px}
+  .hero-cap em{font-family:var(--serif);font-style:italic;font-size:15px;letter-spacing:0;color:var(--ink)}
 
-  /* ARTISTA */
-  .about{display:grid;grid-template-columns:.8fr 1.2fr;gap:72px;align-items:start}
-  .portrait{aspect-ratio:4/5;background:var(--line);display:grid;place-items:center;color:var(--muted);font-size:.8rem;letter-spacing:.14em;text-transform:uppercase;overflow:hidden}
-  .portrait img{width:100%;height:100%;object-fit:cover}
-  .about .lead{font-family:var(--serif);font-size:clamp(1.4rem,2.4vw,1.9rem);line-height:1.35;margin:24px 0}
-  .about p+p{margin-top:16px}
-  .about .text p{color:#3e3a35;max-width:62ch}
-  blockquote{margin-top:36px;padding:24px 0 0;border-top:1px solid var(--line);font-family:var(--serif);font-style:italic;font-size:1.35rem;color:var(--muted)}
+  /* cartiglio */
+  .cart{display:grid;border:1px solid var(--ink);background:var(--paper-2)}
+  .cart>div{padding:8px 12px;border-right:1px solid var(--ink);border-bottom:1px solid var(--ink);min-width:0}
+  .cart .lbl{display:block;font-size:9px;line-height:1.3}
+  .cart .v{font-size:12px;font-weight:400;overflow-wrap:anywhere}
+  .cart .v.t{font-family:var(--serif);font-size:19px;font-style:italic;font-weight:400;line-height:1.2}
+  .cart-hero{grid-template-columns:repeat(4,1fr);margin-bottom:8px}
+  .cart-hero>div:nth-child(4n){border-right:0}
+  .cart-hero>div{border-bottom:0}
 
-  /* MOSTRE */
-  .timeline{list-style:none;max-width:760px}
-  .timeline li{display:grid;grid-template-columns:110px 1fr;gap:24px;padding:20px 0;border-bottom:1px solid var(--line)}
-  .timeline .y{font-family:var(--serif);font-size:1.4rem;color:var(--accent)}
-  .timeline .d{font-size:.85rem;color:var(--muted)}
+  /* ---------- SEZIONI ---------- */
+  section{padding:88px 0;border-top:1px solid var(--ink)}
+  .sh{display:flex;align-items:baseline;gap:18px;margin-bottom:40px;flex-wrap:wrap}
+  .sh .n{font-size:11px;color:var(--red);letter-spacing:.1em}
+  .sh h2{font-family:var(--serif);font-weight:400;font-size:clamp(2.4rem,5vw,3.6rem);line-height:1}
+  .sh .lbl{margin-left:auto}
 
-  /* CONTATTI */
-  .contact{text-align:center}
-  .contact h2{margin-bottom:18px}
-  .contact p{color:var(--muted);max-width:52ch;margin-inline:auto}
-  .contact .mail{display:inline-block;margin-top:28px;font-family:var(--serif);font-size:clamp(1.5rem,3.5vw,2.4rem);text-decoration:none;border-bottom:1px solid var(--accent);padding-bottom:4px}
-  footer{padding:36px 0;border-top:1px solid var(--line);font-size:.75rem;color:var(--muted)}
-  footer .wrap{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+  /* registro tavole */
+  table{width:100%;border-collapse:collapse;font-size:12px}
+  th{text-align:left;font-weight:400;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-soft);padding:0 10px 10px;border-bottom:1px solid var(--ink)}
+  td{padding:11px 10px;border-bottom:1px solid var(--rule);vertical-align:baseline}
+  tbody tr{cursor:pointer;transition:background .15s}
+  tbody tr:hover{background:var(--paper-2)}
+  tbody tr:hover td:first-child{color:var(--red)}
+  td.t{font-family:var(--serif);font-style:italic;font-size:17px}
+  td.r{text-align:right}
+  .st{display:inline-flex;align-items:center;gap:6px;font-size:10px;letter-spacing:.08em;text-transform:uppercase}
+  .st::before{content:"";width:7px;height:7px;border:1px solid currentColor;border-radius:50%}
+  .st.sold{color:var(--red)}.st.sold::before{background:currentColor}
 
-  /* LIGHTBOX */
-  .lb{position:fixed;inset:0;z-index:50;background:rgba(22,20,18,.94);display:none;grid-template-columns:auto 1fr auto;align-items:center;color:#eee8df}
-  .lb.open{display:grid}
-  .lb-stage{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;padding:48px 16px;gap:18px}
-  .lb-stage img{max-height:calc(100vh - 190px);max-width:100%;object-fit:contain;box-shadow:0 20px 60px rgba(0,0,0,.5)}
-  .lb-cap{text-align:center}
-  .lb-cap .t{font-family:var(--serif);font-size:1.5rem;font-style:italic}
-  .lb-cap .m{font-size:.8rem;color:#b5ada2}
-  .lb-cap .n{font-size:.85rem;color:#cfc7bb;max-width:60ch;margin-top:6px}
-  .lb button{background:none;border:none;color:inherit;font-size:2rem;padding:16px 20px;cursor:pointer;opacity:.6;transition:opacity .2s}
-  .lb button:hover{opacity:1}
-  .lb .close{position:absolute;top:8px;right:8px;font-size:1.6rem}
+  /* tavole */
+  .bar{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:28px;padding-bottom:16px;border-bottom:1px dashed var(--rule)}
+  .seg{display:flex;flex-wrap:wrap;border:1px solid var(--ink)}
+  .seg button{background:none;border:0;border-right:1px solid var(--ink);padding:7px 13px;font-size:10px;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;transition:background .2s,color .2s}
+  .seg button:last-child{border-right:0}
+  .seg button:hover{color:var(--red)}
+  .seg button.on{background:var(--ink);color:var(--paper)}
+  .scale-note{font-size:10px;color:var(--ink-soft);margin:-12px 0 24px;min-height:1em}
+  .tavole{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:64px 56px;align-items:end}
+  .tav{cursor:zoom-in;opacity:0;transform:translateY(14px);transition:opacity .6s,transform .6s}
+  .tav.in{opacity:1;transform:none}
+  .tav .stage{display:flex;justify-content:center}
+  .tav .q{width:var(--w);transition:width .7s cubic-bezier(.6,0,.2,1)}
+  .tav .art{transition:box-shadow .3s}
+  .tav:hover .art{box-shadow:0 0 0 1px var(--red)}
+  .tav-head{display:flex;justify-content:space-between;font-size:10px;letter-spacing:.12em;text-transform:uppercase;padding:6px 0;border-top:1px solid var(--ink);margin-top:10px}
+  .tav-head b{font-weight:500;color:var(--red)}
+  .cart-mini{grid-template-columns:1fr 1fr}
+  .cart-mini>div:nth-child(3){border-right:0}
+  .cart-mini>div:nth-last-child(-n+2){border-bottom:0}
+  .cart-mini>div.full{grid-column:1/-1;border-right:0}
 
-  @media (max-width:860px){
+  /* relazione */
+  .rel{display:grid;grid-template-columns:.75fr 1.25fr;gap:72px;align-items:start}
+  .portrait{position:relative;aspect-ratio:4/5;background:var(--paper-2);border:1px solid var(--ink);display:grid;place-items:center;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-soft);overflow:visible}
+  .portrait img{width:100%;height:100%;object-fit:cover;filter:grayscale(1) contrast(1.05)}
+  .portrait .reg.a{left:-8px;top:-8px}.portrait .reg.b{right:-8px;bottom:-8px}
+  .portrait-cap{margin-top:12px;font-size:10px;color:var(--ink-soft)}
+  ol.paras{list-style:none;counter-reset:p}
+  ol.paras>li{counter-increment:p;display:grid;grid-template-columns:52px 1fr;gap:8px;padding:18px 0;border-bottom:1px solid var(--rule)}
+  ol.paras>li::before{content:counter(p,decimal-leading-zero)".";font-size:11px;color:var(--red);padding-top:4px}
+  ol.paras h3{font-family:var(--serif);font-weight:400;font-size:22px;line-height:1.2;margin-bottom:6px}
+  ol.paras p{font-size:13px;color:#33404e;max-width:62ch}
+  .mat{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:0;border:1px solid var(--ink);margin-top:10px}
+  .mat div{padding:8px 10px;border-right:1px solid var(--rule);border-bottom:1px solid var(--rule);font-size:12px}
+  blockquote{margin-top:36px;font-family:var(--serif);font-style:italic;font-size:clamp(1.5rem,2.6vw,2rem);line-height:1.3;position:relative;padding-left:28px}
+  blockquote::before{content:"";position:absolute;left:0;top:.3em;bottom:.2em;width:1px;background:var(--red)}
+
+  /* contatti */
+  .contact{display:grid;grid-template-columns:1fr 1fr;gap:56px;align-items:end}
+  .contact p{font-size:13px;color:var(--ink-soft);max-width:46ch;margin-top:16px}
+  .mail{display:block;font-family:var(--serif);font-size:clamp(1.8rem,4.4vw,3.2rem);text-decoration:none;line-height:1.1;overflow-wrap:anywhere;border-bottom:1px solid var(--ink);padding-bottom:10px;transition:color .2s}
+  .mail:hover{color:var(--red)}
+
+  footer{border-top:1px solid var(--ink);margin-bottom:var(--m)}
+  .cart-foot{grid-template-columns:2fr 1fr 1fr 1fr;border:0;border-left:1px solid var(--ink);border-right:1px solid var(--ink);background:transparent}
+  .cart-foot>div{border-bottom:0}
+  .cart-foot>div:last-child{border-right:0}
+  .cart-foot a{text-decoration:none}
+
+  /* ---------- FOGLIO A SCHERMO INTERO ---------- */
+  .lb{position:fixed;inset:0;z-index:60;display:none;background-color:var(--paper);background-image:inherit;background-size:inherit}
+  .lb.open{display:grid;grid-template-columns:1fr 320px}
+  .lb-stage{display:flex;align-items:center;justify-content:center;padding:70px 70px 40px;min-height:0;overflow:hidden}
+  .lb-stage .q{width:min(var(--lw),100%)}
+  .lb-side{border-left:1px solid var(--ink);display:flex;flex-direction:column;justify-content:flex-end;padding:24px;gap:14px;background:var(--paper)}
+  .lb-side .cart{grid-template-columns:1fr 1fr}
+  .lb-side .cart>div:nth-child(odd){border-right:0}
+  .lb-side .cart>div.full{grid-column:1/-1;border-right:0}
+  .lb-side .cart>div:last-child{border-bottom:0}
+  .lb-note{font-size:12px;color:#33404e}
+  .lb-nav{display:flex;border:1px solid var(--ink)}
+  .lb-nav button{flex:1;background:none;border:0;border-right:1px solid var(--ink);padding:10px;font-size:10px;letter-spacing:.14em;text-transform:uppercase;cursor:pointer}
+  .lb-nav button:last-child{border-right:0}
+  .lb-nav button:hover{background:var(--ink);color:var(--paper)}
+  .lb-close{position:absolute;top:18px;left:22px;background:none;border:0;font-size:10px;letter-spacing:.14em;text-transform:uppercase;cursor:pointer;padding:6px 0;border-bottom:1px solid var(--ink)}
+  .lb-close:hover{color:var(--red);border-color:var(--red)}
+  .lb-count{position:absolute;top:22px;right:344px;font-size:10px;letter-spacing:.14em;color:var(--ink-soft)}
+
+  @media (max-width:900px){
+    :root{--m:8px;--boxh:320px}
+    .wrap{width:min(1160px,100% - 40px)}
+    .zones{display:none}
     nav ul{gap:16px}
-    .hero,.about{grid-template-columns:1fr;gap:40px}
-    .hero{padding:40px 0 72px}
-    section{padding:72px 0}
-    .timeline li{grid-template-columns:80px 1fr}
+    nav ul li.x{display:none}
+    .hero,.rel,.contact{grid-template-columns:1fr;gap:48px}
+    .hero{padding:40px 0 48px}
+    .hero-art{justify-self:start}
+    .hero-art .reg.a{left:-12px}.hero-art .reg.b{right:0;bottom:-20px}
+    .cart-hero{grid-template-columns:1fr 1fr}
+    .cart-hero>div:nth-child(2n){border-right:0}
+    .cart-hero>div:nth-child(-n+2){border-bottom:1px solid var(--ink)}
+    section{padding:64px 0}
+    .hide-s{display:none}
+    .lb.open{grid-template-columns:1fr;grid-template-rows:1fr auto}
+    .lb-stage{padding:64px 40px 16px}
+    .lb-side{border-left:0;border-top:1px solid var(--ink);padding:14px 16px}
+    .lb-count{right:20px}
+    .cart-foot{grid-template-columns:1fr 1fr}
+    .cart-foot>div:nth-child(2n){border-right:0}
+    .cart-foot>div:nth-child(-n+2){border-bottom:1px solid var(--ink)}
   }
-  @media (max-width:560px){
-    nav ul li:nth-child(3){display:none}
-    nav ul a{letter-spacing:.1em}
-    .lb{grid-template-columns:1fr}
-    .lb .prev,.lb .next{position:absolute;bottom:8px}
-    .lb .prev{left:8px}.lb .next{right:8px}
+  @media (max-width:520px){
+    nav ul li.y{display:none}
+    .brand span{display:none}
+    .tavole{grid-template-columns:1fr}
   }
-  @media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}.work{opacity:1;transform:none}}
+  @media (prefers-reduced-motion:reduce){
+    *{transition:none!important;animation:none!important;scroll-behavior:auto!important}
+    .q .art img{opacity:1}.build{display:none}.tav{opacity:1;transform:none}
+  }
 </style>
 </head>
 <body>
 
+<div class="sheet" aria-hidden="true"></div>
+<div class="zones top" aria-hidden="true"><span>A</span><span>B</span><span>C</span><span>D</span><span>E</span><span>F</span><span>G</span><span>H</span></div>
+<div class="zones bot" aria-hidden="true"><span>A</span><span>B</span><span>C</span><span>D</span><span>E</span><span>F</span><span>G</span><span>H</span></div>
+<div class="zones lft" aria-hidden="true"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span></div>
+<div class="zones rgt" aria-hidden="true"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span></div>
+
 <header id="top">
   <nav class="wrap">
-    <a class="brand" href="#top" data-f="nome">Nome Cognome</a>
+    <a class="brand" href="#top"><b data-f="nome">Nome Cognome</b><span> — Fascicolo opere</span></a>
     <ul>
-      <li><a href="#opere">Opere</a></li>
-      <li><a href="#artista">L'artista</a></li>
-      <li><a href="#mostre">Mostre</a></li>
-      <li><a href="#contatti">Contatti</a></li>
+      <li><a href="#tavole"><span>01</span>Tavole</a></li>
+      <li class="x"><a href="#elenco"><span>02</span>Elenco</a></li>
+      <li class="y"><a href="#relazione"><span>03</span>Relazione</a></li>
+      <li class="x"><a href="#esposizioni"><span>04</span>Esposizioni</a></li>
+      <li><a href="#contatti"><span>05</span>Contatti</a></li>
     </ul>
   </nav>
 </header>
 
 <main>
-  <!-- HERO -->
+  <!-- APERTURA -->
   <div class="wrap hero">
     <div>
-      <div class="eyebrow">Pittura · dal 20XX</div>
-      <h1 data-f="nome">Nome Cognome</h1>
-      <p>Una vita a progettare con precisione, poi il colore. Dipinti a olio e acrilico nati dal desiderio di dare forma a ciò che non si misura.</p>
-      <a class="btn" href="#opere">Vedi le opere</a>
+      <div class="doc lbl"><span>Doc. n° 001</span><span>Rev. <span id="rev"></span></span><span>Disciplina: pittura</span></div>
+      <h1><span data-f="nome">Nome Cognome</span><br><i>dal calcolo al colore</i></h1>
+      <p class="lead">Una vita a progettare strutture, misurando tutto al millimetro. Poi la tela, dove le misure restano ma il resto è libero. Qui sono raccolti i dipinti, catalogati come tavole di progetto.</p>
     </div>
-    <figure id="heroFig"></figure>
+    <div>
+      <div class="hero-art" id="hero"></div>
+    </div>
+  </div>
+  <div class="wrap">
+    <div class="cart cart-hero">
+      <div><span class="lbl">Progettista</span><span class="v" data-f="nome">Nome Cognome</span></div>
+      <div><span class="lbl">Formazione</span><span class="v">Ingegneria</span></div>
+      <div><span class="lbl">Scala</span><span class="v">1:1 sulla tela</span></div>
+      <div><span class="lbl">Tavole</span><span class="v" id="ntav"></span></div>
+    </div>
   </div>
 
-  <!-- OPERE -->
-  <section id="opere">
+  <!-- TAVOLE -->
+  <section id="tavole" style="margin-top:56px">
     <div class="wrap">
-      <div class="sec-head">
-        <h2>Opere</h2>
-        <div class="filters" id="filters"></div>
+      <div class="sh"><span class="n">01 —</span><h2>Tavole</h2><span class="lbl">Clic su un'opera per aprire il foglio</span></div>
+      <div class="bar">
+        <div class="seg" id="filters" role="group" aria-label="Filtra per serie"></div>
+        <div class="seg" role="group" aria-label="Vista">
+          <button class="on" data-v="uni">Vista uniforme</button>
+          <button data-v="scala">In scala reale</button>
+        </div>
       </div>
-      <div class="gallery" id="gallery"></div>
+      <p class="scale-note" id="scaleNote"></p>
+      <div class="tavole" id="tavoleEl"></div>
     </div>
   </section>
 
-  <!-- ARTISTA -->
-  <section id="artista">
-    <div class="wrap about">
-      <div class="portrait">Ritratto dell'artista<!-- <img src="img/ritratto.jpg" alt="Ritratto di Nome Cognome"> --></div>
-      <div class="text">
-        <div class="eyebrow">L'artista</div>
-        <p class="lead">Dopo quarant'anni da ingegnere, ha trovato nella pittura un altro modo di costruire.</p>
-        <p>[Biografia breve — dove è nato, il percorso da ingegnere, quando e perché ha iniziato a dipingere. Da sostituire con il testo fornito dall'artista.]</p>
-        <p>[Tecniche, soggetti ricorrenti, cosa lo ispira. Il legame tra il rigore del progetto e la libertà del gesto pittorico.]</p>
+  <!-- ELENCO -->
+  <section id="elenco">
+    <div class="wrap">
+      <div class="sh"><span class="n">02 —</span><h2>Elenco tavole</h2></div>
+      <table>
+        <thead><tr><th>Tav.</th><th>Titolo</th><th class="hide-s">Tecnica</th><th>Misure</th><th class="hide-s">Anno</th><th class="r">Stato</th></tr></thead>
+        <tbody id="registro"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- RELAZIONE -->
+  <section id="relazione">
+    <div class="wrap rel">
+      <div>
+        <div class="portrait"><span class="reg a"></span><span class="reg b"></span>Ritratto dell'artista<!-- <img src="img/ritratto.jpg" alt="Ritratto di Nome Cognome"> --></div>
+        <p class="portrait-cap">Fig. 1 — L'autore nello studio, [anno].</p>
+      </div>
+      <div>
+        <div class="sh" style="margin-bottom:16px"><span class="n">03 —</span><h2>Relazione</h2></div>
+        <p class="lbl" style="margin-bottom:12px">Relazione tecnico-illustrativa sull'autore</p>
+        <ol class="paras">
+          <li><div><h3>Premessa</h3><p>[Dove e quando è nato, in due righe.]</p></div></li>
+          <li><div><h3>Formazione e carriera</h3><p>[Laurea in ingegneria, settore, anni di lavoro, un progetto di cui va fiero.]</p></div></li>
+          <li><div><h3>La svolta</h3><p>[Quando e perché ha iniziato a dipingere. Il passaggio dalla pensione alla tela.]</p></div></li>
+          <li><div><h3>Metodo</h3><p>[Come lavora: parte da uno schizzo? Usa misure, griglie, geometrie? Cosa resta dell'ingegnere nei quadri.]</p></div></li>
+          <li><div><h3>Materiali impiegati</h3>
+            <div class="mat"><div>Olio</div><div>Acrilico</div><div>Tela di lino</div><div>Tavola</div><div>Spatola</div><div>[altro]</div></div></div></li>
+        </ol>
         <blockquote>«Una frase dell'artista sul suo modo di dipingere.»</blockquote>
       </div>
     </div>
   </section>
 
-  <!-- MOSTRE -->
-  <section id="mostre">
+  <!-- ESPOSIZIONI -->
+  <section id="esposizioni">
     <div class="wrap">
-      <h2 style="margin-bottom:36px">Mostre</h2>
-      <ul class="timeline">
-        <li><span class="y">20XX</span><div><div>Titolo della mostra</div><div class="d">Luogo, città — personale / collettiva</div></div></li>
-        <li><span class="y">20XX</span><div><div>Titolo della mostra</div><div class="d">Luogo, città — personale / collettiva</div></div></li>
-      </ul>
+      <div class="sh"><span class="n">04 —</span><h2>Esposizioni</h2></div>
+      <table>
+        <thead><tr><th>Anno</th><th>Titolo</th><th class="hide-s">Luogo</th><th class="r">Tipo</th></tr></thead>
+        <tbody class="static">
+          <tr><td>20XX</td><td class="t">Titolo della mostra</td><td class="hide-s">Luogo, città</td><td class="r">Personale</td></tr>
+          <tr><td>20XX</td><td class="t">Titolo della mostra</td><td class="hide-s">Luogo, città</td><td class="r">Collettiva</td></tr>
+        </tbody>
+      </table>
     </div>
   </section>
 
   <!-- CONTATTI -->
   <section id="contatti">
     <div class="wrap contact">
-      <div class="eyebrow">Contatti</div>
-      <h2>Per informazioni sulle opere</h2>
-      <p>Per acquisti, visite allo studio o collaborazioni, scrivi direttamente all'artista.</p>
-      <a class="mail" href="mailto:email@esempio.it">email@esempio.it</a>
+      <div>
+        <div class="sh" style="margin-bottom:0"><span class="n">05 —</span><h2>Contatti</h2></div>
+        <p>Per informazioni su un'opera, acquisti o visite allo studio, indicare nel messaggio il numero della tavola.</p>
+      </div>
+      <div>
+        <span class="lbl">Posta elettronica</span>
+        <a class="mail" href="mailto:email@esempio.it">email@esempio.it</a>
+      </div>
     </div>
   </section>
 </main>
 
-<footer><div class="wrap"><span>© <span id="yr"></span> <span data-f="nome">Nome Cognome</span>. Tutte le opere sono di proprietà dell'artista.</span><a href="#top">Torna su ↑</a></div></footer>
+<footer>
+  <div class="wrap">
+    <div class="cart cart-foot">
+      <div><span class="lbl">Titolo</span><span class="v"><span data-f="nome">Nome Cognome</span> — Fascicolo opere</span></div>
+      <div><span class="lbl">Data</span><span class="v" id="yr"></span></div>
+      <div><span class="lbl">Diritti</span><span class="v">Riservati all'autore</span></div>
+      <div><span class="lbl">Foglio</span><span class="v"><a href="#top">Torna su ↑</a></span></div>
+    </div>
+  </div>
+</footer>
 
-<!-- LIGHTBOX -->
-<div class="lb" id="lb" role="dialog" aria-modal="true" aria-label="Opera ingrandita">
-  <button class="prev" aria-label="Precedente">‹</button>
-  <div class="lb-stage"><img id="lbImg" alt=""><div class="lb-cap" id="lbCap"></div></div>
-  <button class="next" aria-label="Successiva">›</button>
-  <button class="close" aria-label="Chiudi">✕</button>
+<!-- FOGLIO A SCHERMO INTERO -->
+<div class="lb" id="lb" role="dialog" aria-modal="true" aria-label="Tavola ingrandita">
+  <button class="lb-close" id="lbClose">← Chiudi foglio</button>
+  <span class="lb-count" id="lbCount"></span>
+  <div class="lb-stage" id="lbStage"></div>
+  <aside class="lb-side">
+    <p class="lb-note" id="lbNote"></p>
+    <div class="cart" id="lbCart"></div>
+    <div class="lb-nav"><button id="lbPrev">← Prec.</button><button id="lbNext">Succ. →</button></div>
+  </aside>
 </div>
 
 <script>
 /* =====================================================================
    DATI DA COMPILARE
    - NOME: nome dell'artista (aggiorna anche <title> e meta description)
-   - OPERE: una riga per quadro. Metti le foto nella cartella img/
-     e scrivi il percorso in "img". Se "img" è vuoto, compare un segnaposto.
-     "serie" alimenta i filtri sopra la galleria.
-     "venduto: true" mostra un pallino accanto alla misura.
-     La prima opera con "inEvidenza: true" va nella copertina.
+   - OPERE: una riga per quadro, nell'ordine in cui devono apparire.
+     misure: "BASE × ALTEZZA cm" (prima la larghezza, poi l'altezza).
+             Servono per le quote e per la vista "in scala reale".
+     img:    percorso della foto in img/ (es. "img/tramonto-2024.jpg").
+             Le foto vanno ritagliate esattamente sul bordo della tela.
+             Se vuoto compare un segnaposto.
+     serie:  alimenta i filtri.  venduto:true → "collezione privata".
+     inEvidenza:true → l'opera in apertura.
    ===================================================================== */
 const NOME = "Nome Cognome";
 
 const OPERE = [
   { titolo:"Titolo opera 1", anno:2024, tecnica:"Olio su tela",      misure:"70 × 100 cm", serie:"Paesaggi", img:"", note:"", inEvidenza:true },
   { titolo:"Titolo opera 2", anno:2024, tecnica:"Acrilico su tela",  misure:"50 × 50 cm",  serie:"Astratti", img:"", note:"" },
-  { titolo:"Titolo opera 3", anno:2023, tecnica:"Olio su tavola",    misure:"40 × 60 cm",  serie:"Paesaggi", img:"", note:"", venduto:true },
+  { titolo:"Titolo opera 3", anno:2023, tecnica:"Olio su tavola",    misure:"60 × 40 cm",  serie:"Paesaggi", img:"", note:"", venduto:true },
   { titolo:"Titolo opera 4", anno:2023, tecnica:"Tecnica mista",     misure:"80 × 60 cm",  serie:"Astratti", img:"", note:"" },
   { titolo:"Titolo opera 5", anno:2022, tecnica:"Olio su tela",      misure:"60 × 80 cm",  serie:"Ritratti", img:"", note:"" },
   { titolo:"Titolo opera 6", anno:2022, tecnica:"Acrilico su carta", misure:"30 × 40 cm",  serie:"Astratti", img:"", note:"" },
@@ -228,69 +410,131 @@ const OPERE = [
 
 /* ------------------ da qui in giù non serve toccare ------------------ */
 
-// Segnaposto astratto (SVG) con proporzioni ricavate dalle misure
+const dims=o=>{const m=(o.misure||"").match(/(\d+(?:[.,]\d+)?)\s*[×x]\s*(\d+(?:[.,]\d+)?)/);return m?[+m[1].replace(",","."),+m[2].replace(",",".")]:[50,70]};
+const num=i=>String(i+1).padStart(2,"0");
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
 function placeholder(o,i){
-  const m=(o.misure||"").match(/(\d+)\s*[×x]\s*(\d+)/);
-  const w=m?+m[1]:4, h=m?+m[2]:5, W=600, H=Math.round(W*h/w);
-  const pal=[["#c9b79c","#a2462b","#3b4a54","#e8dcc6"],["#7d8a6a","#d9c7a3","#2f3a33","#b86b4b"],["#3d4f63","#c2a878","#ece4d5","#8c3f2a"],["#b9a48a","#5e6b73","#e3d6bf","#2d2a26"]][i%4];
+  const [w,h]=dims(o), W=600, H=Math.round(W*h/w);
+  const pal=[["#c9b79c","#c2412d","#1e2b3a","#e8dfcc"],["#7d8a6a","#d9c7a3","#2f3a33","#b86b4b"],["#3d4f63","#c2a878","#ece4d5","#8c3f2a"],["#b9a48a","#5e6b73","#e3d6bf","#2d2a26"]][i%4];
   let r=(i+1)*9301; const rnd=()=>((r=(r*49297+233280)%233280)/233280);
   let s=`<rect width="${W}" height="${H}" fill="${pal[3]}"/>`;
   for(let k=0;k<5;k++){const c=pal[k%3];
     s+= k%2 ? `<circle cx="${rnd()*W}" cy="${rnd()*H}" r="${60+rnd()*W/2.5}" fill="${c}" opacity=".7"/>`
             : `<rect x="${rnd()*W*.6}" y="${rnd()*H*.7}" width="${120+rnd()*W/2}" height="${80+rnd()*H/2.5}" fill="${c}" opacity=".65" transform="rotate(${rnd()*20-10} ${W/2} ${H/2})"/>`;}
-  return "data:image/svg+xml,"+encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}"><filter id="g"><feTurbulence baseFrequency=".9" numOctaves="2"/><feColorMatrix values="0 0 0 0 .5 0 0 0 0 .45 0 0 0 0 .4 0 0 0 .12 0"/><feComposite in2="SourceGraphic" operator="in"/></filter>${s}<rect width="${W}" height="${H}" filter="url(#g)"/></svg>`);
+  return "data:image/svg+xml,"+encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}">${s}</svg>`);
 }
 const src=(o,i)=>o.img||placeholder(o,i);
-const meta=o=>[o.tecnica,o.misure,o.anno].filter(Boolean).join(" · ");
 
+// Disegno quotato di un'opera
+function quoted(o,i){
+  const [w,h]=dims(o);
+  return `<div class="q" style="--ar:${w}/${h}">
+    <span class="ext"></span>
+    <span class="qh"><span>${w}</span></span>
+    <span class="qv"><span>${h}</span></span>
+    <div class="art"><img src="${src(o,i)}" alt="${esc(o.titolo)}${o.tecnica?", "+esc(o.tecnica):""}" loading="lazy">
+      <svg class="build" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+        <rect x="0" y="0" width="100" height="100" pathLength="1"/>
+        <line class="d" x1="0" y1="0" x2="100" y2="100" pathLength="1"/>
+        <line class="d" x1="100" y1="0" x2="0" y2="100" pathLength="1"/>
+      </svg></div></div>`;
+}
+const draw=el=>{el.classList.remove("drawn");void el.offsetWidth;el.classList.add("drawn")};
+const stato=o=>o.venduto?'<span class="st sold">Coll. privata</span>':'<span class="st">Disponibile</span>';
+
+// Testi generali
 document.querySelectorAll('[data-f="nome"]').forEach(e=>e.textContent=NOME);
-document.getElementById("yr").textContent=new Date().getFullYear();
+const Y=new Date().getFullYear();
+document.getElementById("yr").textContent=Y;
+document.getElementById("rev").textContent=Y;
+document.getElementById("ntav").textContent=String(OPERE.length).padStart(2,"0");
 
-// Copertina
-const heroIdx=Math.max(0,OPERE.findIndex(o=>o.inEvidenza));
-const hf=document.getElementById("heroFig"), ho=OPERE[heroIdx];
-hf.innerHTML=`<img src="${src(ho,heroIdx)}" alt="${ho.titolo}"><figcaption><b>${ho.titolo}</b>, ${meta(ho)}</figcaption>`;
-hf.onclick=()=>openLb(heroIdx);
+// Apertura
+const hi=Math.max(0,OPERE.findIndex(o=>o.inEvidenza)), ho=OPERE[hi];
+const heroEl=document.getElementById("hero");
+heroEl.innerHTML=`<span class="reg a"></span><span class="reg b"></span>${quoted(ho,hi)}
+  <div class="hero-cap">Tav. ${num(hi)} — <em>${esc(ho.titolo)}</em>, ${esc(ho.tecnica)}, ${ho.anno}</div>`;
+heroEl.querySelector("img").loading="eager";
+requestAnimationFrame(()=>draw(heroEl.querySelector(".q")));
+heroEl.onclick=()=>openLb(hi);
 
-// Filtri + galleria
-let view=OPERE.map((_,i)=>i);
+// Tavole
+const maxW=Math.max(...OPERE.map(o=>dims(o)[0]));
+let vista="uni", serieSel="Tutte", view=[];
+const tavEl=document.getElementById("tavoleEl"), fEl=document.getElementById("filters");
 const serie=["Tutte",...new Set(OPERE.map(o=>o.serie).filter(Boolean))];
-const fEl=document.getElementById("filters"), gEl=document.getElementById("gallery");
 if(serie.length>2){
-  fEl.innerHTML=serie.map((s,i)=>`<button class="${i?"":"on"}" data-s="${s}">${s}</button>`).join("");
-  fEl.onclick=e=>{const b=e.target.closest("button"); if(!b)return;
-    fEl.querySelectorAll("button").forEach(x=>x.classList.toggle("on",x===b)); render(b.dataset.s);};
-}
-const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add("in");io.unobserve(e.target)}}),{rootMargin:"0px 0px -40px"});
-function render(s="Tutte"){
-  view=OPERE.map((o,i)=>i).filter(i=>s==="Tutte"||OPERE[i].serie===s);
-  gEl.innerHTML=view.map((i,k)=>{const o=OPERE[i];return `<article class="work" data-k="${k}">
-    <div class="frame"><img loading="lazy" src="${src(o,i)}" alt="${o.titolo}, ${o.tecnica||""}"></div>
-    <div class="label"><div class="t">${o.titolo}</div><div class="m">${meta(o)}${o.venduto?'<span class="sold" title="Venduto"></span>':""}</div></div></article>`}).join("");
-  gEl.querySelectorAll(".work").forEach(w=>{io.observe(w);w.onclick=()=>openLb(view[+w.dataset.k])});
-}
-render();
+  fEl.innerHTML=serie.map((s,i)=>`<button class="${i?"":"on"}" data-s="${esc(s)}">${esc(s)}</button>`).join("");
+  fEl.onclick=e=>{const b=e.target.closest("button");if(!b)return;
+    fEl.querySelectorAll("button").forEach(x=>x.classList.toggle("on",x===b));serieSel=b.dataset.s;renderTav()};
+} else fEl.style.display="none";
+document.querySelector('[aria-label="Vista"]').onclick=e=>{const b=e.target.closest("button");if(!b)return;
+  b.parentNode.querySelectorAll("button").forEach(x=>x.classList.toggle("on",x===b));vista=b.dataset.v;sizeTav()};
 
-// Lightbox
-const lb=document.getElementById("lb"), lbImg=document.getElementById("lbImg"), lbCap=document.getElementById("lbCap");
-let cur=0;
-function show(i){cur=i;const o=OPERE[i];lbImg.src=src(o,i);lbImg.alt=o.titolo;
-  lbCap.innerHTML=`<div class="t">${o.titolo}</div><div class="m">${meta(o)}${o.venduto?" · venduto":""}</div>${o.note?`<div class="n">${o.note}</div>`:""}`;}
-function openLb(i){show(i);lb.classList.add("open");document.body.style.overflow="hidden"}
-function closeLb(){lb.classList.remove("open");document.body.style.overflow=""}
-function step(d){const pos=view.indexOf(cur);const list=pos<0?OPERE.map((_,i)=>i):view;const p=list.indexOf(cur);show(list[(p+d+list.length)%list.length])}
-lb.querySelector(".close").onclick=closeLb;
-lb.querySelector(".prev").onclick=e=>{e.stopPropagation();step(-1)};
-lb.querySelector(".next").onclick=e=>{e.stopPropagation();step(1)};
-lb.onclick=e=>{if(e.target===lb||e.target.classList.contains("lb-stage"))closeLb()};
+function widthFor(o){
+  const [w,h]=dims(o);
+  return vista==="scala" ? `calc(${(w/maxW*100).toFixed(2)}% - 34px)` : `min(calc(100% - 34px), calc(var(--boxh) * ${w} / ${h}))`;
+}
+function sizeTav(){
+  tavEl.querySelectorAll(".tav").forEach(t=>t.querySelector(".q").style.width=widthFor(OPERE[+t.dataset.i]));
+  document.getElementById("scaleNote").textContent = vista==="scala" ? `Le opere sono mostrate in proporzione tra loro: la più larga misura ${maxW} cm.` : "";
+}
+const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add("in");draw(e.target.querySelector(".q"));io.unobserve(e.target)}}),{rootMargin:"0px 0px -60px"});
+function renderTav(){
+  view=OPERE.map((_,i)=>i).filter(i=>serieSel==="Tutte"||OPERE[i].serie===serieSel);
+  tavEl.innerHTML=view.map(i=>{const o=OPERE[i];return `<article class="tav" data-i="${i}" tabindex="0" aria-label="Tavola ${num(i)}: ${esc(o.titolo)}">
+    <div class="stage">${quoted(o,i)}</div>
+    <div class="tav-head"><b>Tav. ${num(i)}</b><span>${esc(o.serie||"")}</span></div>
+    <div class="cart cart-mini">
+      <div class="full"><span class="lbl">Titolo</span><span class="v t">${esc(o.titolo)}</span></div>
+      <div><span class="lbl">Tecnica</span><span class="v">${esc(o.tecnica)}</span></div>
+      <div><span class="lbl">Anno</span><span class="v">${o.anno||"—"}</span></div>
+    </div></article>`}).join("");
+  tavEl.querySelectorAll(".tav").forEach(t=>{io.observe(t);
+    t.onclick=()=>openLb(+t.dataset.i);
+    t.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();openLb(+t.dataset.i)}}});
+  sizeTav();
+}
+renderTav();
+
+// Elenco
+document.getElementById("registro").innerHTML=OPERE.map((o,i)=>`<tr data-i="${i}">
+  <td>${num(i)}</td><td class="t">${esc(o.titolo)}</td><td class="hide-s">${esc(o.tecnica)}</td>
+  <td>${esc(o.misure)}</td><td class="hide-s">${o.anno||""}</td><td class="r">${stato(o)}</td></tr>`).join("");
+document.getElementById("registro").onclick=e=>{const r=e.target.closest("tr");if(r)openLb(+r.dataset.i)};
+
+// Foglio a schermo intero
+const lb=document.getElementById("lb"), stage=document.getElementById("lbStage");
+let cur=0, lastFocus=null;
+function show(i){
+  cur=i;const o=OPERE[i],[w,h]=dims(o);
+  const sh=stage.clientHeight-110, sw=stage.clientWidth-110;
+  stage.style.setProperty("--lw",Math.max(160,Math.min(sw,sh*w/h))+"px");
+  stage.innerHTML=quoted(o,i);
+  stage.querySelector("img").loading="eager";
+  draw(stage.querySelector(".q"));
+  document.getElementById("lbCount").textContent=`Foglio ${num(i)} / ${String(OPERE.length).padStart(2,"0")}`;
+  document.getElementById("lbNote").textContent=o.note||"";
+  document.getElementById("lbCart").innerHTML=`
+    <div class="full"><span class="lbl">Tav. ${num(i)} — Titolo</span><span class="v t">${esc(o.titolo)}</span></div>
+    <div><span class="lbl">Tecnica</span><span class="v">${esc(o.tecnica)}</span></div>
+    <div><span class="lbl">Anno</span><span class="v">${o.anno||"—"}</span></div>
+    <div><span class="lbl">Misure</span><span class="v">${esc(o.misure)}</span></div>
+    <div><span class="lbl">Serie</span><span class="v">${esc(o.serie||"—")}</span></div>
+    <div class="full"><span class="lbl">Stato</span><span class="v">${stato(o)}</span></div>`;
+}
+function openLb(i){lastFocus=document.activeElement;lb.classList.add("open");document.body.style.overflow="hidden";show(i);document.getElementById("lbClose").focus()}
+function closeLb(){lb.classList.remove("open");document.body.style.overflow="";lastFocus&&lastFocus.focus&&lastFocus.focus()}
+function step(d){const list=view.includes(cur)?view:OPERE.map((_,i)=>i);const p=list.indexOf(cur);show(list[(p+d+list.length)%list.length])}
+document.getElementById("lbClose").onclick=closeLb;
+document.getElementById("lbPrev").onclick=()=>step(-1);
+document.getElementById("lbNext").onclick=()=>step(1);
 document.addEventListener("keydown",e=>{if(!lb.classList.contains("open"))return;
-  if(e.key==="Escape")closeLb(); if(e.key==="ArrowRight")step(1); if(e.key==="ArrowLeft")step(-1);});
-let tx=0;lb.addEventListener("touchstart",e=>tx=e.touches[0].clientX,{passive:true});
-lb.addEventListener("touchend",e=>{const d=e.changedTouches[0].clientX-tx;if(Math.abs(d)>50)step(d<0?1:-1)});
-
-// Bordo header allo scroll
-const hd=document.querySelector("header");
-addEventListener("scroll",()=>hd.classList.toggle("scrolled",scrollY>10),{passive:true});
+  if(e.key==="Escape")closeLb();if(e.key==="ArrowRight")step(1);if(e.key==="ArrowLeft")step(-1)});
+let tx=0;stage.addEventListener("touchstart",e=>tx=e.touches[0].clientX,{passive:true});
+stage.addEventListener("touchend",e=>{const d=e.changedTouches[0].clientX-tx;if(Math.abs(d)>50)step(d<0?1:-1)});
+addEventListener("resize",()=>{if(lb.classList.contains("open"))show(cur)});
 </script>
 </body>
 </html>

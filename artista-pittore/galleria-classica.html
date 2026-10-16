@@ -1,0 +1,296 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nome Cognome — Opere</title>
+<meta name="description" content="Dipinti di Nome Cognome. Galleria delle opere, biografia e contatti.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --wall:#f6f3ee;        /* parete della galleria */
+    --paper:#fffdf9;
+    --ink:#1f1d1a;
+    --muted:#6f6a62;
+    --line:#ddd6cb;
+    --accent:#a2462b;      /* terra di Siena: cambialo in base ai quadri */
+    --serif:"Cormorant Garamond", Georgia, serif;
+    --sans:"Inter", system-ui, sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{background:var(--wall);color:var(--ink);font-family:var(--sans);font-weight:300;line-height:1.65;-webkit-font-smoothing:antialiased}
+  img{display:block;max-width:100%}
+  a{color:inherit}
+  .wrap{width:min(1180px,100% - 32px);margin-inline:auto}
+
+  /* NAV */
+  header{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--wall) 88%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid transparent;transition:border-color .3s}
+  header.scrolled{border-color:var(--line)}
+  nav{display:flex;align-items:center;justify-content:space-between;height:68px}
+  .brand{font-family:var(--serif);font-size:1.45rem;letter-spacing:.02em;text-decoration:none}
+  nav ul{display:flex;gap:28px;list-style:none}
+  nav ul a{text-decoration:none;font-size:.78rem;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);transition:color .2s}
+  nav ul a:hover{color:var(--ink)}
+
+  /* HERO */
+  .hero{display:grid;grid-template-columns:1fr 1.1fr;gap:64px;align-items:center;padding:72px 0 96px}
+  .eyebrow{font-size:.75rem;letter-spacing:.22em;text-transform:uppercase;color:var(--accent)}
+  .hero h1{font-family:var(--serif);font-weight:400;font-size:clamp(2.8rem,6vw,5rem);line-height:1.02;margin:18px 0 22px}
+  .hero h1 em{font-style:italic;color:var(--muted)}
+  .hero p{max-width:40ch;color:var(--muted)}
+  .btn{display:inline-block;margin-top:32px;padding:13px 26px;border:1px solid var(--ink);text-decoration:none;font-size:.78rem;letter-spacing:.16em;text-transform:uppercase;transition:background .25s,color .25s}
+  .btn:hover{background:var(--ink);color:var(--wall)}
+  .hero figure{background:var(--paper);padding:clamp(14px,2.5vw,28px);box-shadow:0 30px 60px -30px rgba(40,30,20,.35);cursor:zoom-in}
+  .hero figcaption{margin-top:14px;font-size:.8rem;color:var(--muted)}
+  .hero figcaption b{font-family:var(--serif);font-size:1.05rem;font-weight:500;font-style:italic;color:var(--ink)}
+
+  /* SEZIONI */
+  section{padding:96px 0;border-top:1px solid var(--line)}
+  .sec-head{display:flex;justify-content:space-between;align-items:end;gap:24px;flex-wrap:wrap;margin-bottom:48px}
+  h2{font-family:var(--serif);font-weight:400;font-size:clamp(2.2rem,4vw,3.2rem);line-height:1.1}
+  .filters{display:flex;gap:6px;flex-wrap:wrap}
+  .filters button{font:inherit;font-size:.74rem;letter-spacing:.12em;text-transform:uppercase;background:none;border:1px solid var(--line);color:var(--muted);padding:8px 14px;cursor:pointer;transition:all .2s}
+  .filters button:hover{color:var(--ink);border-color:var(--ink)}
+  .filters button.on{background:var(--ink);border-color:var(--ink);color:var(--wall)}
+
+  /* GALLERIA (masonry) */
+  .gallery{columns:3 300px;column-gap:40px}
+  .work{break-inside:avoid;margin-bottom:48px;cursor:zoom-in;opacity:0;transform:translateY(16px);transition:opacity .6s,transform .6s}
+  .work.in{opacity:1;transform:none}
+  .work .frame{background:var(--paper);padding:14px;box-shadow:0 18px 40px -26px rgba(40,30,20,.4);transition:transform .35s,box-shadow .35s}
+  .work:hover .frame{transform:translateY(-4px);box-shadow:0 26px 50px -26px rgba(40,30,20,.5)}
+  .label{margin-top:14px;padding-left:12px;border-left:2px solid var(--accent)}
+  .label .t{font-family:var(--serif);font-size:1.2rem;font-style:italic}
+  .label .m{font-size:.78rem;color:var(--muted)}
+  .sold{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--accent);margin-left:6px;vertical-align:middle}
+
+  /* ARTISTA */
+  .about{display:grid;grid-template-columns:.8fr 1.2fr;gap:72px;align-items:start}
+  .portrait{aspect-ratio:4/5;background:var(--line);display:grid;place-items:center;color:var(--muted);font-size:.8rem;letter-spacing:.14em;text-transform:uppercase;overflow:hidden}
+  .portrait img{width:100%;height:100%;object-fit:cover}
+  .about .lead{font-family:var(--serif);font-size:clamp(1.4rem,2.4vw,1.9rem);line-height:1.35;margin:24px 0}
+  .about p+p{margin-top:16px}
+  .about .text p{color:#3e3a35;max-width:62ch}
+  blockquote{margin-top:36px;padding:24px 0 0;border-top:1px solid var(--line);font-family:var(--serif);font-style:italic;font-size:1.35rem;color:var(--muted)}
+
+  /* MOSTRE */
+  .timeline{list-style:none;max-width:760px}
+  .timeline li{display:grid;grid-template-columns:110px 1fr;gap:24px;padding:20px 0;border-bottom:1px solid var(--line)}
+  .timeline .y{font-family:var(--serif);font-size:1.4rem;color:var(--accent)}
+  .timeline .d{font-size:.85rem;color:var(--muted)}
+
+  /* CONTATTI */
+  .contact{text-align:center}
+  .contact h2{margin-bottom:18px}
+  .contact p{color:var(--muted);max-width:52ch;margin-inline:auto}
+  .contact .mail{display:inline-block;margin-top:28px;font-family:var(--serif);font-size:clamp(1.5rem,3.5vw,2.4rem);text-decoration:none;border-bottom:1px solid var(--accent);padding-bottom:4px}
+  footer{padding:36px 0;border-top:1px solid var(--line);font-size:.75rem;color:var(--muted)}
+  footer .wrap{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+
+  /* LIGHTBOX */
+  .lb{position:fixed;inset:0;z-index:50;background:rgba(22,20,18,.94);display:none;grid-template-columns:auto 1fr auto;align-items:center;color:#eee8df}
+  .lb.open{display:grid}
+  .lb-stage{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;padding:48px 16px;gap:18px}
+  .lb-stage img{max-height:calc(100vh - 190px);max-width:100%;object-fit:contain;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+  .lb-cap{text-align:center}
+  .lb-cap .t{font-family:var(--serif);font-size:1.5rem;font-style:italic}
+  .lb-cap .m{font-size:.8rem;color:#b5ada2}
+  .lb-cap .n{font-size:.85rem;color:#cfc7bb;max-width:60ch;margin-top:6px}
+  .lb button{background:none;border:none;color:inherit;font-size:2rem;padding:16px 20px;cursor:pointer;opacity:.6;transition:opacity .2s}
+  .lb button:hover{opacity:1}
+  .lb .close{position:absolute;top:8px;right:8px;font-size:1.6rem}
+
+  @media (max-width:860px){
+    nav ul{gap:16px}
+    .hero,.about{grid-template-columns:1fr;gap:40px}
+    .hero{padding:40px 0 72px}
+    section{padding:72px 0}
+    .timeline li{grid-template-columns:80px 1fr}
+  }
+  @media (max-width:560px){
+    nav ul li:nth-child(3){display:none}
+    nav ul a{letter-spacing:.1em}
+    .lb{grid-template-columns:1fr}
+    .lb .prev,.lb .next{position:absolute;bottom:8px}
+    .lb .prev{left:8px}.lb .next{right:8px}
+  }
+  @media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}.work{opacity:1;transform:none}}
+</style>
+</head>
+<body>
+
+<header id="top">
+  <nav class="wrap">
+    <a class="brand" href="#top" data-f="nome">Nome Cognome</a>
+    <ul>
+      <li><a href="#opere">Opere</a></li>
+      <li><a href="#artista">L'artista</a></li>
+      <li><a href="#mostre">Mostre</a></li>
+      <li><a href="#contatti">Contatti</a></li>
+    </ul>
+  </nav>
+</header>
+
+<main>
+  <!-- HERO -->
+  <div class="wrap hero">
+    <div>
+      <div class="eyebrow">Pittura · dal 20XX</div>
+      <h1 data-f="nome">Nome Cognome</h1>
+      <p>Una vita a progettare con precisione, poi il colore. Dipinti a olio e acrilico nati dal desiderio di dare forma a ciò che non si misura.</p>
+      <a class="btn" href="#opere">Vedi le opere</a>
+    </div>
+    <figure id="heroFig"></figure>
+  </div>
+
+  <!-- OPERE -->
+  <section id="opere">
+    <div class="wrap">
+      <div class="sec-head">
+        <h2>Opere</h2>
+        <div class="filters" id="filters"></div>
+      </div>
+      <div class="gallery" id="gallery"></div>
+    </div>
+  </section>
+
+  <!-- ARTISTA -->
+  <section id="artista">
+    <div class="wrap about">
+      <div class="portrait">Ritratto dell'artista<!-- <img src="img/ritratto.jpg" alt="Ritratto di Nome Cognome"> --></div>
+      <div class="text">
+        <div class="eyebrow">L'artista</div>
+        <p class="lead">Dopo quarant'anni da ingegnere, ha trovato nella pittura un altro modo di costruire.</p>
+        <p>[Biografia breve — dove è nato, il percorso da ingegnere, quando e perché ha iniziato a dipingere. Da sostituire con il testo fornito dall'artista.]</p>
+        <p>[Tecniche, soggetti ricorrenti, cosa lo ispira. Il legame tra il rigore del progetto e la libertà del gesto pittorico.]</p>
+        <blockquote>«Una frase dell'artista sul suo modo di dipingere.»</blockquote>
+      </div>
+    </div>
+  </section>
+
+  <!-- MOSTRE -->
+  <section id="mostre">
+    <div class="wrap">
+      <h2 style="margin-bottom:36px">Mostre</h2>
+      <ul class="timeline">
+        <li><span class="y">20XX</span><div><div>Titolo della mostra</div><div class="d">Luogo, città — personale / collettiva</div></div></li>
+        <li><span class="y">20XX</span><div><div>Titolo della mostra</div><div class="d">Luogo, città — personale / collettiva</div></div></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- CONTATTI -->
+  <section id="contatti">
+    <div class="wrap contact">
+      <div class="eyebrow">Contatti</div>
+      <h2>Per informazioni sulle opere</h2>
+      <p>Per acquisti, visite allo studio o collaborazioni, scrivi direttamente all'artista.</p>
+      <a class="mail" href="mailto:email@esempio.it">email@esempio.it</a>
+    </div>
+  </section>
+</main>
+
+<footer><div class="wrap"><span>© <span id="yr"></span> <span data-f="nome">Nome Cognome</span>. Tutte le opere sono di proprietà dell'artista.</span><a href="#top">Torna su ↑</a></div></footer>
+
+<!-- LIGHTBOX -->
+<div class="lb" id="lb" role="dialog" aria-modal="true" aria-label="Opera ingrandita">
+  <button class="prev" aria-label="Precedente">‹</button>
+  <div class="lb-stage"><img id="lbImg" alt=""><div class="lb-cap" id="lbCap"></div></div>
+  <button class="next" aria-label="Successiva">›</button>
+  <button class="close" aria-label="Chiudi">✕</button>
+</div>
+
+<script>
+/* =====================================================================
+   DATI DA COMPILARE
+   - NOME: nome dell'artista (aggiorna anche <title> e meta description)
+   - OPERE: una riga per quadro. Metti le foto nella cartella img/
+     e scrivi il percorso in "img". Se "img" è vuoto, compare un segnaposto.
+     "serie" alimenta i filtri sopra la galleria.
+     "venduto: true" mostra un pallino accanto alla misura.
+     La prima opera con "inEvidenza: true" va nella copertina.
+   ===================================================================== */
+const NOME = "Nome Cognome";
+
+const OPERE = [
+  { titolo:"Titolo opera 1", anno:2024, tecnica:"Olio su tela",      misure:"70 × 100 cm", serie:"Paesaggi", img:"", note:"", inEvidenza:true },
+  { titolo:"Titolo opera 2", anno:2024, tecnica:"Acrilico su tela",  misure:"50 × 50 cm",  serie:"Astratti", img:"", note:"" },
+  { titolo:"Titolo opera 3", anno:2023, tecnica:"Olio su tavola",    misure:"40 × 60 cm",  serie:"Paesaggi", img:"", note:"", venduto:true },
+  { titolo:"Titolo opera 4", anno:2023, tecnica:"Tecnica mista",     misure:"80 × 60 cm",  serie:"Astratti", img:"", note:"" },
+  { titolo:"Titolo opera 5", anno:2022, tecnica:"Olio su tela",      misure:"60 × 80 cm",  serie:"Ritratti", img:"", note:"" },
+  { titolo:"Titolo opera 6", anno:2022, tecnica:"Acrilico su carta", misure:"30 × 40 cm",  serie:"Astratti", img:"", note:"" },
+  { titolo:"Titolo opera 7", anno:2021, tecnica:"Olio su tela",      misure:"100 × 70 cm", serie:"Paesaggi", img:"", note:"" },
+  { titolo:"Titolo opera 8", anno:2021, tecnica:"Olio su tela",      misure:"50 × 70 cm",  serie:"Ritratti", img:"", note:"" },
+];
+
+/* ------------------ da qui in giù non serve toccare ------------------ */
+
+// Segnaposto astratto (SVG) con proporzioni ricavate dalle misure
+function placeholder(o,i){
+  const m=(o.misure||"").match(/(\d+)\s*[×x]\s*(\d+)/);
+  const w=m?+m[1]:4, h=m?+m[2]:5, W=600, H=Math.round(W*h/w);
+  const pal=[["#c9b79c","#a2462b","#3b4a54","#e8dcc6"],["#7d8a6a","#d9c7a3","#2f3a33","#b86b4b"],["#3d4f63","#c2a878","#ece4d5","#8c3f2a"],["#b9a48a","#5e6b73","#e3d6bf","#2d2a26"]][i%4];
+  let r=(i+1)*9301; const rnd=()=>((r=(r*49297+233280)%233280)/233280);
+  let s=`<rect width="${W}" height="${H}" fill="${pal[3]}"/>`;
+  for(let k=0;k<5;k++){const c=pal[k%3];
+    s+= k%2 ? `<circle cx="${rnd()*W}" cy="${rnd()*H}" r="${60+rnd()*W/2.5}" fill="${c}" opacity=".7"/>`
+            : `<rect x="${rnd()*W*.6}" y="${rnd()*H*.7}" width="${120+rnd()*W/2}" height="${80+rnd()*H/2.5}" fill="${c}" opacity=".65" transform="rotate(${rnd()*20-10} ${W/2} ${H/2})"/>`;}
+  return "data:image/svg+xml,"+encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}"><filter id="g"><feTurbulence baseFrequency=".9" numOctaves="2"/><feColorMatrix values="0 0 0 0 .5 0 0 0 0 .45 0 0 0 0 .4 0 0 0 .12 0"/><feComposite in2="SourceGraphic" operator="in"/></filter>${s}<rect width="${W}" height="${H}" filter="url(#g)"/></svg>`);
+}
+const src=(o,i)=>o.img||placeholder(o,i);
+const meta=o=>[o.tecnica,o.misure,o.anno].filter(Boolean).join(" · ");
+
+document.querySelectorAll('[data-f="nome"]').forEach(e=>e.textContent=NOME);
+document.getElementById("yr").textContent=new Date().getFullYear();
+
+// Copertina
+const heroIdx=Math.max(0,OPERE.findIndex(o=>o.inEvidenza));
+const hf=document.getElementById("heroFig"), ho=OPERE[heroIdx];
+hf.innerHTML=`<img src="${src(ho,heroIdx)}" alt="${ho.titolo}"><figcaption><b>${ho.titolo}</b>, ${meta(ho)}</figcaption>`;
+hf.onclick=()=>openLb(heroIdx);
+
+// Filtri + galleria
+let view=OPERE.map((_,i)=>i);
+const serie=["Tutte",...new Set(OPERE.map(o=>o.serie).filter(Boolean))];
+const fEl=document.getElementById("filters"), gEl=document.getElementById("gallery");
+if(serie.length>2){
+  fEl.innerHTML=serie.map((s,i)=>`<button class="${i?"":"on"}" data-s="${s}">${s}</button>`).join("");
+  fEl.onclick=e=>{const b=e.target.closest("button"); if(!b)return;
+    fEl.querySelectorAll("button").forEach(x=>x.classList.toggle("on",x===b)); render(b.dataset.s);};
+}
+const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add("in");io.unobserve(e.target)}}),{rootMargin:"0px 0px -40px"});
+function render(s="Tutte"){
+  view=OPERE.map((o,i)=>i).filter(i=>s==="Tutte"||OPERE[i].serie===s);
+  gEl.innerHTML=view.map((i,k)=>{const o=OPERE[i];return `<article class="work" data-k="${k}">
+    <div class="frame"><img loading="lazy" src="${src(o,i)}" alt="${o.titolo}, ${o.tecnica||""}"></div>
+    <div class="label"><div class="t">${o.titolo}</div><div class="m">${meta(o)}${o.venduto?'<span class="sold" title="Venduto"></span>':""}</div></div></article>`}).join("");
+  gEl.querySelectorAll(".work").forEach(w=>{io.observe(w);w.onclick=()=>openLb(view[+w.dataset.k])});
+}
+render();
+
+// Lightbox
+const lb=document.getElementById("lb"), lbImg=document.getElementById("lbImg"), lbCap=document.getElementById("lbCap");
+let cur=0;
+function show(i){cur=i;const o=OPERE[i];lbImg.src=src(o,i);lbImg.alt=o.titolo;
+  lbCap.innerHTML=`<div class="t">${o.titolo}</div><div class="m">${meta(o)}${o.venduto?" · venduto":""}</div>${o.note?`<div class="n">${o.note}</div>`:""}`;}
+function openLb(i){show(i);lb.classList.add("open");document.body.style.overflow="hidden"}
+function closeLb(){lb.classList.remove("open");document.body.style.overflow=""}
+function step(d){const pos=view.indexOf(cur);const list=pos<0?OPERE.map((_,i)=>i):view;const p=list.indexOf(cur);show(list[(p+d+list.length)%list.length])}
+lb.querySelector(".close").onclick=closeLb;
+lb.querySelector(".prev").onclick=e=>{e.stopPropagation();step(-1)};
+lb.querySelector(".next").onclick=e=>{e.stopPropagation();step(1)};
+lb.onclick=e=>{if(e.target===lb||e.target.classList.contains("lb-stage"))closeLb()};
+document.addEventListener("keydown",e=>{if(!lb.classList.contains("open"))return;
+  if(e.key==="Escape")closeLb(); if(e.key==="ArrowRight")step(1); if(e.key==="ArrowLeft")step(-1);});
+let tx=0;lb.addEventListener("touchstart",e=>tx=e.touches[0].clientX,{passive:true});
+lb.addEventListener("touchend",e=>{const d=e.changedTouches[0].clientX-tx;if(Math.abs(d)>50)step(d<0?1:-1)});
+
+// Bordo header allo scroll
+const hd=document.querySelector("header");
+addEventListener("scroll",()=>hd.classList.toggle("scrolled",scrollY>10),{passive:true});
+</script>
+</body>
+</html>
