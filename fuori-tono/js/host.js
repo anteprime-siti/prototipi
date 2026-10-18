@@ -430,10 +430,15 @@
         <footer class="h-bar"><div></div><div class="acts"><button class="btn primary" data-a="after">Continua</button></div></footer>`;
     } else if (S.phase === 'guess') {
       const e = P(g.guesser), match = g.guessText && norm(g.guessText) === norm(g.word);
+      // se restano altri infiltrati in gioco la parola non si mostra: la partita potrebbe continuare
+      const others = alive().filter(isImp).length > 0 && S.settings.endMode !== 'single';
       h = `<section class="stage"><p class="kicker red">Ultima chance</p><div class="avxl">${avatar(e, { imp: true })}</div>
         <h1 class="big">${esc(e.name)} prova a indovinare</h1>
-        ${g.guessText ? `<div class="pair"><div><p class="kicker">Ha scritto</p><p class="wordbox">${esc(g.guessText)}</p></div><div><p class="kicker">La parola era</p><p class="wordbox">${esc(g.word)}</p></div></div>
-          <p class="sub">${match ? 'Sembra proprio giusta.' : 'Decidete voi: è giusta?'}</p>` : '<p class="sub">Se indovina, ruba la vittoria.</p>'}</section>
+        ${!g.guessText ? '<p class="sub">Se indovina, ruba la vittoria.</p>'
+          : others ? `<div class="pair"><div><p class="kicker">Ha scritto</p><p class="wordbox">${esc(g.guessText)}</p></div><div><p class="kicker">La parola segreta</p><p class="wordbox secretbox">${match ? 'COMBACIA' : 'NON COMBACIA'}</p></div></div>
+            <p class="sub">${match ? 'È la parola giusta.' : 'La parola resta segreta: ci sono ancora infiltrati in gioco.'} Decidete voi se va bene.</p>`
+          : `<div class="pair"><div><p class="kicker">Ha scritto</p><p class="wordbox">${esc(g.guessText)}</p></div><div><p class="kicker">La parola era</p><p class="wordbox">${esc(g.word)}</p></div></div>
+            <p class="sub">${match ? 'Sembra proprio giusta.' : 'Decidete voi: è giusta?'}</p>`}</section>
         <footer class="h-bar"><div></div><div class="acts">${g.guessText ? '<button class="btn ghost" data-a="wrong">Sbagliata</button><button class="btn primary" data-a="right">Giusta</button>' : '<button class="btn ghost" data-a="wrong">Salta</button>'}</div></footer>`;
     } else if (S.phase === 'end') {
       const civ = g.winner === 'civ';

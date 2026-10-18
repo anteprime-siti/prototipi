@@ -307,3 +307,4 @@ details.peek[open] summary{margin-bottom:10px}
 .resume-bar .btn { display: inline-flex; flex-direction: column; align-items: flex-start; gap: 2px; text-decoration: none; padding-block: 12px; height: auto; }
 .resume-bar small { font: 500 12px var(--mono); opacity: .7; }
 @media (max-width: 520px) { .presets, .roles { grid-template-columns: minmax(0, 1fr); } }
+.secretbox { letter-spacing: .08em; color: var(--dim); }
