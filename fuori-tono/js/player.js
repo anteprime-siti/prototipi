@@ -58,6 +58,8 @@
     const send = opts.send;
     let st = null, n = -1, editing = false, pick = null, confirmLeave = false, guessSent = false, timerBase = null, lastSpeaker = null, revealed = false, holding = false;
     const P = id => st && st.players.find(p => p.id === id);
+    const toast = t => { const el = document.createElement('div'); el.className = 'toast'; el.textContent = t; document.body.appendChild(el); setTimeout(() => el.remove(), 3200); };
+    const outLine = () => st.out && st.out.length ? `<p class="mono dim center small outline">FUORI: ${st.out.map(o => esc(o.name)).join(' · ')}</p>` : '';
     const buzz = v => { try { navigator.vibrate && navigator.vibrate(v); } catch (e) {} };
     const box = document.createElement('div'); box.className = 'pl-app'; root.appendChild(box);
 
@@ -71,6 +73,7 @@
       if (st.phase === 'clues' && st.speaker === st.me.id && lastSpeaker !== st.me.id) buzz([60, 60, 140]);
       lastSpeaker = st.speaker;
       if (prev && prev.phase !== st.phase && st.phase === 'reveal') buzz(90);
+      if (st.flash && (!prev || prev.flash !== st.flash)) toast(st.flash);
       if (!holding) render();
     }
 
@@ -130,7 +133,7 @@
         const left = timerBase ? Math.max(0, Math.ceil((timerBase - Date.now()) / 1000)) : null;
         return (mine ? `<div class="spot me"><p class="mono">È IL TUO TURNO</p><h1 class="title xl">Parla tu</h1><p>Di’ una parola ad alta voce.</p>${left != null ? `<p class="count mono" id="left">${left}</p>` : ''}<button class="btn primary wide" data-a="done">Ho detto la mia</button></div>`
           : `<div class="spot"><div class="avbig">${avatar(sp)}</div><p class="mono dim">STA PARLANDO</p><h1 class="title">${esc(sp.name)}</h1></div>`)
-          + `<p class="mono dim center">Giro ${s.round} di ${s.clueRounds}</p><ol class="queue">${s.order.map((id, i) => `<li class="${i < s.turnIdx ? 'done' : i === s.turnIdx ? 'now' : ''}">${esc(P(id).name)}</li>`).join('')}</ol>`
+          + `<p class="mono dim center">Giro ${s.round} di ${s.clueRounds}</p><ol class="queue">${s.order.map((id, i) => `<li class="${i < s.turnIdx ? 'done' : i === s.turnIdx ? 'now' : ''}">${esc(P(id).name)}</li>`).join('')}</ol>${outLine()}`
           + (!s.revealOnce && s.secret ? `<details class="peek"><summary>Rileggi la tua carta</summary>${secretCard(s.secret)}</details>` : '');
       }
       if (s.phase === 'vote') {
@@ -141,7 +144,7 @@
         }
         const list = s.candidates.filter(id => id !== me.id);
         return `<h1 class="title">${s.runoff ? 'Ballottaggio' : 'Chi è fuori tono?'}</h1><p class="dim center">Tocca un sospettato, poi conferma.</p>
-          <div class="vlist">${list.map(id => { const p = P(id); return `<button class="vbtn ${pick === id ? 'on' : ''}" data-a="pick" data-id="${id}" aria-pressed="${pick === id}"><span class="avw">${avatar(p)}</span><span>${esc(p.name)}</span></button>`; }).join('')}</div>
+          ${outLine()}<div class="vlist">${list.map(id => { const p = P(id); return `<button class="vbtn ${pick === id ? 'on' : ''}" data-a="pick" data-id="${id}" aria-pressed="${pick === id}"><span class="avw">${avatar(p)}</span><span>${esc(p.name)}</span></button>`; }).join('')}</div>
           ${pick ? `<div class="confirm"><button class="btn ghost" data-a="unpick">Annulla</button><button class="btn danger" data-a="vote">Conferma: ${esc(P(pick).name)}</button></div>` : ''}`;
       }
       if (s.phase === 'result') {
@@ -158,10 +161,10 @@
         return `<p class="mono red center">ULTIMA CHANCE</p><h1 class="title">${esc(P(s.guesser).name)} prova a indovinare</h1><p class="dim center">Silenzio in sala.</p>`;
       }
       if (s.phase === 'end') {
-        const e = s.end, imp = e.imps.includes(me.id), won = (e.winner === 'imp') === imp, g = e.gained[me.id] || 0;
+        const e = s.end, imp = e.imps.includes(me.id), under = (e.unders || []).includes(me.id), won = (e.winner === 'imp') === imp, g = e.gained[me.id] || 0;
         return `<p class="mono center ${won ? '' : 'red'}">${won ? 'VITTORIA' : 'SCONFITTA'}</p><div class="avbig mid">${avatar(me, { imp })}</div>
-          <h1 class="title">${won ? 'Hai vinto' : 'Hai perso'}</h1><p class="dim center">${imp ? 'Eri l’impostore.' : 'Eri innocente.'}${g ? ` +${g} punt${g === 1 ? 'o' : 'i'}` : ''}</p>
-          ${dossier(`<p class="kick">La parola era</p><p class="word sm">${esc(e.word)}</p>${e.mode === 'hint' || e.mode === 'undercover' ? `<p class="hint">Impostori: <b>${esc(e.sim)}</b></p>` : ''}`)}
+          <h1 class="title">${won ? 'Hai vinto' : 'Hai perso'}</h1><p class="dim center">${under ? 'Eri undercover: la tua parola era diversa.' : imp ? 'Eri l’impostore.' : 'Eri innocente.'}${g ? ` +${g} punt${g === 1 ? 'o' : 'i'}` : ''}</p>
+          ${dossier(`<p class="kick">La parola era</p><p class="word sm">${esc(e.word)}</p>${(e.unders || []).length ? `<p class="hint">Undercover: <b>${esc(e.sim)}</b></p>` : e.mode === 'hint' ? `<p class="hint">Indizio impostori: <b>${esc(e.sim)}</b></p>` : ''}`)}
           <p class="mono dim center">Totale ${me.score} punt${me.score === 1 ? 'o' : 'i'}</p>`;
       }
       return '';

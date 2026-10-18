@@ -23,6 +23,13 @@ Online: `https://anteprime-siti.github.io/prototipi/fuori-tono/`
 - Nel risultato si vede chi ha votato chi.
 - Sul telefono c’è «Come si gioca»; l’host su telefono ha le schede Tavolo / La mia carta su una riga.
 
+## Novità della v4
+- **Termina la partita** (X in alto sullo schermo dell’host): interrompi e torna alla sala d’attesa, oppure chiudi la stanza per tutti.
+- **Partite in sospeso**: ricaricando la stessa scheda la stanza riparte da sola; riaprendo il gioco più tardi si sceglie se riprenderla o aprirne una nuova. La pagina iniziale propone «Riprendi la stanza» o «Rientra nella stanza».
+- **Ruoli combinati**: impostori e undercover insieme, ognuno con il suo numero, più le combo pronte Classica, Undercover, Misto, Caos, Veloce, Esperti.
+- **Fuori dal gioco** sullo schermo: chi è stato votato (con il ruolo), chi ha lasciato e chi è stato tolto; avviso sullo schermo e sui telefoni.
+- Chi viene tolto dall’host non rientra più da solo; segnale di vita ogni 3 secondi, così i telefoni si ricollegano in fretta se lo schermo dell’host cade.
+
 ## Da sapere
 - Serve internet su tutti i dispositivi (collegamento iniziale tramite il server gratuito di PeerJS; librerie PeerJS e QR caricate dalla cartella lib/).
 - Lo schermo dell’host deve restare aperto; se si ricarica, stanza e giocatori vengono ripresi.

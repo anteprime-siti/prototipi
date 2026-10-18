@@ -6,16 +6,31 @@
   const PACKS = window.FT_PACKS;
   const MAXP = 20;
 
-  const DEF = { cats: ['cibo', 'luoghi', 'animali', 'oggetti', 'colori', 'film'], impostors: 1, randomImp: false,
+  const DEF = { cats: ['cibo', 'luoghi', 'animali', 'oggetti', 'colori', 'film'], impostors: 1, undercover: 0, randomImp: false,
     impMode: 'category', showCat: false, clueRounds: 2, turnTime: 0, revealOnce: true, lastChance: true, endMode: 'survival', custom: '' };
+  // Combo pronte: cambiano più impostazioni insieme
+  const PRESETS = [
+    { id: 'classica', t: 'Classica', d: '1 impostore che conosce la categoria', v: { impostors: 1, undercover: 0, randomImp: false, impMode: 'category', clueRounds: 2, turnTime: 0, endMode: 'survival' } },
+    { id: 'undercover', t: 'Undercover', d: '1 undercover con una parola simile: non sa di esserlo', v: { impostors: 0, undercover: 1, randomImp: false, clueRounds: 2, turnTime: 0, endMode: 'survival' } },
+    { id: 'misto', t: 'Misto', d: '1 impostore senza indizi e 1 undercover', v: { impostors: 1, undercover: 1, randomImp: false, impMode: 'nothing', clueRounds: 2, turnTime: 0, endMode: 'survival' } },
+    { id: 'caos', t: 'Caos', d: 'Numero e ruoli degli infiltrati a sorpresa', v: { impostors: 1, undercover: 1, randomImp: true, impMode: 'hint', clueRounds: 2, turnTime: 0, endMode: 'survival' } },
+    { id: 'veloce', t: 'Veloce', d: '1 giro, 30 secondi a testa, voto unico', v: { impostors: 1, undercover: 0, randomImp: false, impMode: 'category', clueRounds: 1, turnTime: 30, endMode: 'single' } },
+    { id: 'esperti', t: 'Esperti', d: 'Impostore senza indizi, 3 giri di parole', v: { impostors: 1, undercover: 0, randomImp: false, impMode: 'nothing', clueRounds: 3, turnTime: 0, endMode: 'survival' } }
+  ];
+  const presetOn = s => (PRESETS.find(p => Object.entries(p.v).every(([k, v]) => s[k] === v)) || {}).id;
   const genCode = () => Array.from({ length: 4 }, () => 'ABCDEFGHJKLMNPQRSTUVWXYZ'[Math.floor(Math.random() * 24)]).join('');
 
-  let S;
-  try { S = JSON.parse(store.get('ft2-host', true) || 'null'); } catch (e) { S = null; }
-  if (!S || !S.code) S = { code: genCode(), phase: 'lobby', players: [], settings: { ...DEF }, game: null, recent: [], n: 0, localId: null };
-  S.settings = { ...DEF, ...S.settings };
-  S.players.forEach(p => p.online = !!p.local);
-  try { Object.assign(FT.photos, JSON.parse(store.get('ft2-photos', true) || '{}')); } catch (e) {}
+  const KEY = 'ft3-host', PKEY = 'ft3-photos';
+  const fresh = () => ({ code: genCode(), phase: 'lobby', players: [], settings: { ...DEF }, game: null, recent: [], n: 0, localId: null });
+  let S, saved = null;
+  try { saved = JSON.parse(store.get(KEY) || store.get('ft2-host', true) || 'null'); } catch (e) { saved = null; }
+  function prepare(st) {
+    S = st && st.code ? st : fresh();
+    S.settings = { ...DEF, ...S.settings };
+    if (S.settings.impMode === 'undercover') { S.settings.undercover = S.settings.impostors; S.settings.impostors = 0; S.settings.impMode = 'category'; }
+    S.players.forEach(p => p.online = !!p.local);
+    try { Object.assign(FT.photos, JSON.parse(store.get(PKEY) || '{}')); } catch (e) {}
+  }
 
   const conns = new Map();
   let peer = null, peerState = 'connecting', idRetries = 0;
@@ -23,10 +38,12 @@
   let tab = 'table';           // 'table' | 'me' (se l'host gioca)
   let voteTimer = null, seenTimer = null, localUI = null;
 
-  const save = () => { store.set('ft2-host', JSON.stringify(S), true); };
-  const savePhotos = () => store.set('ft2-photos', JSON.stringify(FT.photos), true);
+  const save = () => { if (S) { S.ts = Date.now(); store.set(KEY, JSON.stringify(S)); } };
+  const savePhotos = () => store.set(PKEY, JSON.stringify(FT.photos));
   const P = id => S.players.find(p => p.id === id);
-  const G = () => S.game;
+  let flashT = null;
+  function flash(text) { S.flash = { text, until: Date.now() + 4500 }; clearTimeout(flashT); flashT = setTimeout(() => { S.flash = null; update(); }, 4600); }
+  const G = () => S && S.game;
   const inGame = id => G() && G().ids.includes(id);
   const alive = () => G() ? G().ids.filter(id => G().alive[id]) : [];
   const isImp = id => G() && G().imps.includes(id);
@@ -46,8 +63,9 @@
     peer.on('disconnected', () => { peerState = 'off'; render(); setTimeout(() => { if (peer && !peer.destroyed) peer.reconnect(); }, 2000); });
     peer.on('error', e => {
       if (e.type === 'unavailable-id') {
-        peer.destroy();
-        if (idRetries++ < 2) setTimeout(startPeer, 4000);
+        // il codice è ancora occupato (es. la scheda vecchia non si è chiusa bene): riprova per circa un minuto, poi cambia codice
+        peer.destroy(); peerState = 'busy'; render();
+        if (idRetries++ < 20) setTimeout(startPeer, 3000);
         else { S.code = genCode(); save(); idRetries = 0; startPeer(); }
       } else if (['network', 'server-error', 'socket-error', 'socket-closed'].includes(e.type)) {
         peerState = 'off'; render();
@@ -116,6 +134,12 @@
   }
 
   function removePlayer(id, self) {
+    const who = P(id), g0 = G();
+    if (who && g0 && g0.ids.includes(id) && S.phase !== 'end' && g0.alive[id]) {
+      g0.out = g0.out || []; g0.out.push({ id, name: who.name, icon: who.icon, color: who.color, why: self ? 'left' : 'kicked' });
+    }
+    if (who && S.phase !== 'lobby') flash(self ? `${who.name} ha lasciato la partita` : `L’host ha tolto ${who.name} dalla partita`);
+    else if (who && self) flash(`${who.name} ha lasciato la stanza`);
     const c = conns.get(id);
     if (c && !c.local) { if (!self) { try { c.send({ t: 'kicked' }); } catch (e) {} } setTimeout(() => { try { c.close(); } catch (e) {} }, 300); }
     conns.delete(id);
@@ -127,7 +151,7 @@
       const idx = g.order.indexOf(id);
       g.ids = g.ids.filter(x => x !== id); delete g.alive[id]; delete g.votes[id];
       Object.keys(g.votes).forEach(v => { if (g.votes[v] === id) delete g.votes[v]; });
-      g.imps = g.imps.filter(x => x !== id);
+      g.imps = g.imps.filter(x => x !== id); g.unders = (g.unders || []).filter(x => x !== id);
       if (idx >= 0) { g.order.splice(idx, 1); if (idx < g.turnIdx) g.turnIdx--; if (g.turnIdx >= g.order.length) g.turnIdx = 0; }
       if (g.runoff) g.runoff = g.runoff.filter(x => x !== id);
       if (g.guesser === id) { g.guesser = null; }
@@ -144,7 +168,7 @@
     alive: G() ? !!G().alive[pl.id] : true });
   function view(p) {
     const g = G();
-    const v = { phase: S.phase, code: S.code, n: S.n, revealOnce: S.settings.revealOnce,
+    const v = { phase: S.phase, code: S.code, n: S.n, revealOnce: S.settings.revealOnce, flash: S.flash && S.flash.until > Date.now() ? S.flash.text : null,
       me: { ...pub(p), waiting: !!p.waiting, gone: !!(g && S.phase !== 'lobby' && !g.ids.includes(p.id) && !p.waiting) },
       players: S.players.map(pub) };
     if (g && !inGame(p.id) && S.phase !== 'lobby') v.me.waiting = true;
@@ -152,21 +176,28 @@
     Object.assign(v, { order: g.order, turnIdx: g.turnIdx, round: g.round, clueRounds: S.settings.clueRounds,
       speaker: S.phase === 'clues' ? g.order[g.turnIdx] : null,
       timerLeft: S.phase === 'clues' && g.turnEnd ? Math.max(0, g.turnEnd - Date.now()) : null,
-      seen: !!g.seen[p.id] });
+      seen: !!g.seen[p.id], out: outList().map(o => ({ name: o.name, why: o.why })) });
     if (S.phase === 'vote') Object.assign(v, { candidates: candidates(), myVote: g.votes[p.id] || null, runoff: !!g.runoff, voted: Object.keys(g.votes).length, voters: votersNeeded().length });
     if (S.phase === 'result' || S.phase === 'guess') v.result = g.result;
     if (S.phase === 'guess') Object.assign(v, { guesser: g.guesser, guessText: g.guessText || null });
     if (inGame(p.id)) v.secret = S.settings.revealOnce && g.seen[p.id] && S.phase !== 'end' ? { type: 'hidden' } : secretFor(p.id);
-    if (S.phase === 'end') v.end = { winner: g.winner, stolen: !!g.stolen, word: g.word, sim: g.sim, cat: g.cat, imps: g.imps, mode: g.mode, gained: g.gained || {} };
+    if (S.phase === 'end') v.end = { winner: g.winner, stolen: !!g.stolen, word: g.word, sim: g.sim, cat: g.cat, imps: g.imps, unders: g.unders || [], mode: g.mode, gained: g.gained || {} };
     return v;
+  }
+  const isUnder = id => G() && (G().unders || []).includes(id);
+  // chi è fuori: votati (con ruolo già svelato) e chi ha lasciato o è stato tolto
+  function outList() {
+    const g = G(); if (!g) return [];
+    const voted = g.ids.filter(id => !g.alive[id] && P(id)).map(id => ({ id, name: P(id).name, icon: P(id).icon, color: P(id).color, why: isUnder(id) ? 'under' : isImp(id) ? 'imp' : 'civ' }));
+    return voted.concat(g.out || []);
   }
   function secretFor(id) {
     const g = G();
+    if (isUnder(id)) return { type: 'word', text: g.sim, color: g.simColor, cat: g.cat };
     if (!isImp(id)) return { type: 'word', text: g.word, color: g.color, cat: g.cat };
     if (g.mode === 'nothing') return { type: 'imp' };
     if (g.mode === 'category') return { type: 'imp', cat: g.cat };
-    if (g.mode === 'hint') return { type: 'imp', hint: g.sim, cat: g.cat };
-    return { type: 'word', text: g.sim, color: g.simColor, cat: g.cat };
+    return { type: 'imp', hint: g.sim, cat: g.cat };
   }
   function broadcast() {
     for (const [id, c] of conns) { const p = P(id); if (p && c.open) { try { c.send({ t: 'state', s: view(p) }); } catch (e) {} } }
@@ -184,7 +215,20 @@
   }
   const maxImps = n => Math.max(1, Math.floor((n - 1) / 2));
   const ready = () => S.players.filter(p => p.online);
-  const canStart = () => ready().length < 3 ? 'Servono almeno 3 giocatori collegati' : !wordPool().length ? 'Scegli almeno un tema nelle impostazioni' : '';
+  const canStart = () => ready().length < 3 ? 'Servono almeno 3 giocatori collegati' : !wordPool().length ? 'Scegli almeno un tema nelle impostazioni'
+    : !S.settings.randomImp && S.settings.impostors + S.settings.undercover < 1 ? 'Serve almeno un impostore o un undercover' : '';
+  // quanti impostori consapevoli (a) e undercover (u) per questa partita
+  function roleCounts(n) {
+    const s = S.settings, max = maxImps(n);
+    if (s.randomImp) {
+      const k = 1 + Math.floor(Math.random() * max);
+      if (s.undercover > 0 && s.impostors > 0) { let u = 0; for (let i = 0; i < k; i++) if (Math.random() < 0.5) u++; return { a: k - u, u }; }
+      return s.undercover > 0 ? { a: 0, u: k } : { a: k, u: 0 };
+    }
+    let a = s.impostors, u = s.undercover;
+    while (a + u > max) { if (u > 0 && u >= a) u--; else a--; }
+    return { a, u };
+  }
   function startGame() {
     if (canStart()) return toast(canStart());
     clearTimers();
@@ -193,15 +237,15 @@
     const pick = fresh[Math.floor(Math.random() * fresh.length)];
     S.recent = [...S.recent, pick.word].slice(-60);
     S.players.forEach(p => p.waiting = false);
-    const ids = ready().map(p => p.id), max = maxImps(ids.length);
-    const k = S.settings.randomImp ? 1 + Math.floor(Math.random() * max) : Math.min(S.settings.impostors, max);
-    const imps = shuffle(ids).slice(0, k);
+    const ids = ready().map(p => p.id), rc = roleCounts(ids.length), k = rc.a + rc.u;
+    const imps = shuffle(ids).slice(0, k), unders = imps.slice(0, rc.u);
     let order = shuffle(ids);
-    if (S.settings.impMode !== 'undercover') { const f = order.findIndex(id => !imps.includes(id)); if (f > 0) order = order.slice(f).concat(order.slice(0, f)); }
+    { const f = order.findIndex(id => !imps.includes(id)); if (f > 0) order = order.slice(f).concat(order.slice(0, f)); }
     S.n++;
-    S.game = { ids, imps, mode: S.settings.impMode, cat: pick.cat, word: pick.word, sim: pick.sim, color: pick.color || null, simColor: pick.simColor || null,
+    S.game = { ids, imps, unders, aware: rc.a, out: [], mode: S.settings.impMode, cat: pick.cat, word: pick.word, sim: pick.sim, color: pick.color || null, simColor: pick.simColor || null,
       alive: Object.fromEntries(ids.map(id => [id, true])), seen: {}, order, turnIdx: 0, round: 1, turnEnd: null, votes: {}, runoff: null,
       result: null, guesser: null, guessText: null, winner: null, impCount: k, voteRound: 1 };
+    S.flash = null;
     S.phase = 'reveal'; sheet = null;
     update();
   }
@@ -235,12 +279,12 @@
     if (tied.length > 1 && !g.runoff) return startVote(tied);
     const elim = tied.length === 1 ? tied[0] : null;
     if (elim) g.alive[elim] = false;
-    g.result = { counts, elim, wasImp: elim ? isImp(elim) : false, tie: !elim };
+    g.result = { counts, elim, wasImp: elim ? isImp(elim) : false, wasUnder: elim ? isUnder(elim) : false, tie: !elim };
     g.runoff = null; S.phase = 'result'; update();
   }
   function afterResult() {
     const g = G(), r = g.result;
-    if (r.elim && r.wasImp && S.settings.lastChance && g.mode !== 'undercover' && P(r.elim)) { g.guesser = r.elim; g.guessText = null; S.phase = 'guess'; return update(); }
+    if (r.elim && r.wasImp && !r.wasUnder && S.settings.lastChance && P(r.elim)) { g.guesser = r.elim; g.guessText = null; S.phase = 'guess'; return update(); }
     resolve();
   }
   function resolve() {
@@ -263,10 +307,18 @@
     });
     clearTimers(); S.phase = 'end'; update();
   }
-  function toLobby() { clearTimers(); S.phase = 'lobby'; S.game = null; S.players.forEach(p => p.waiting = false); update(); }
+  function toLobby(msg) { clearTimers(); S.phase = 'lobby'; S.game = null; S.players.forEach(p => p.waiting = false); if (msg) flash(msg); update(); }
+  function closeRoom() {
+    for (const [, c] of conns) { if (!c.local) { try { c.send({ t: 'closed' }); } catch (e) {} } }
+    store.del(KEY); store.del(PKEY); store.del('ft2-host', true);
+    setTimeout(() => { try { peer && peer.destroy(); } catch (e) {} location.href = './'; }, 400);
+  }
   function clearTimers() { clearTimeout(voteTimer); clearTimeout(seenTimer); }
 
+  // segnale di vita: i telefoni capiscono in fretta se lo schermo dell'host è sparito
+  setInterval(() => { for (const [, c] of conns) { if (!c.local && c.open) { try { c.send({ t: 'ping' }); } catch (e) {} } } }, 3000);
   setInterval(() => {
+    if (!S) return;
     const g = G();
     if (S.phase === 'clues' && g && g.turnEnd) {
       const left = g.turnEnd - Date.now();
@@ -307,26 +359,42 @@
   // ---------------- interfaccia ----------------
   const icon = {
     full: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>',
+    x: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>',
     gear: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg>'
   };
-  const status = () => `<span class="status ${peerState}"><i></i>${peerState === 'on' ? 'In onda' : peerState === 'off' ? 'Riconnessione…' : 'Apro la stanza…'}</span>`;
+  const status = () => `<span class="status ${peerState}"><i></i>${peerState === 'on' ? 'In onda' : peerState === 'off' ? 'Riconnessione…' : peerState === 'busy' ? 'Riapro la stanza…' : 'Apro la stanza…'}</span>`;
   const card = (p, extra = '', opt = {}) => `<div class="suspect ${p.online === false ? 'off' : ''} ${opt.cls || ''}" ${opt.act ? `data-a="${opt.act}" data-id="${p.id}" role="button" tabindex="0"` : ''}>
       <div class="avw">${avatar(p, opt.av || {})}${extra}</div><p class="nm">${esc(p.name)}</p>${opt.under || ''}</div>`;
   const catChip = () => G() && S.settings.showCat ? `<span class="chip">Categoria · ${esc(G().cat)}</span>` : '';
-  const impLine = () => S.settings.randomImp ? 'Impostori: numero segreto' : `${G().impCount} impostor${G().impCount > 1 ? 'i' : 'e'} tra voi`;
+  const plural = (n, a, b) => `${n} ${n === 1 ? a : b}`;
+  const impLine = () => {
+    if (S.settings.randomImp) return 'Infiltrati: numero segreto';
+    const g = G(), u = (g.unders || []).length, a = g.impCount - u;
+    return [a ? plural(a, 'impostore', 'impostori') : '', u ? plural(u, 'undercover', 'undercover') : ''].filter(Boolean).join(' e ') + ' tra voi';
+  };
+  const outStrip = () => {
+    const o = outList(); if (!o.length) return '';
+    const lab = { civ: 'innocente', imp: 'impostore', under: 'undercover', left: 'ha lasciato', kicked: 'tolto dall’host' };
+    return `<div class="outstrip"><span class="mono dim">FUORI DAL GIOCO</span>${o.map(x => `<span class="outp ${x.why}"><span class="avw">${avatar(x, { dead: true })}</span><span><b>${esc(x.name)}</b><i>${lab[x.why]}</i></span></span>`).join('')}</div>`;
+  };
   const summary = () => {
     const s = S.settings;
-    return [s.randomImp ? 'Impostori a sorpresa' : `${s.impostors} impostor${s.impostors > 1 ? 'i' : 'e'}`, FT.IMP_MODES[s.impMode].t,
+    const pr = PRESETS.find(p => p.id === presetOn(s));
+    return [pr ? 'Combo · ' + pr.t : '', s.randomImp ? 'Infiltrati a sorpresa' : [s.impostors ? plural(s.impostors, 'impostore', 'impostori') : '', s.undercover ? plural(s.undercover, 'undercover', 'undercover') : ''].filter(Boolean).join(' + '),
+      s.impostors || s.randomImp ? FT.IMP_MODES[s.impMode].t : '',
       `${s.clueRounds} gir${s.clueRounds > 1 ? 'i' : 'o'}`, s.endMode === 'single' ? 'Voto unico' : 'Fino all’ultimo', `${s.cats.length + (s.custom.trim() ? 1 : 0)} temi`]
-      .map(t => `<span class="chip">${esc(t)}</span>`).join('');
+      .filter(Boolean).map(t => `<span class="chip">${esc(t)}</span>`).join('');
   };
 
   let lastPhase = null;
   function render() {
+    if (!S) return;
     const g = G(), anim = S.phase !== lastPhase;
     const tabs = S.localId ? `<div class="seg tabs" role="tablist"><button role="tab" data-a="tab" data-v="table" aria-selected="${tab === 'table'}" class="${tab === 'table' ? 'on' : ''}">Tavolo</button><button role="tab" data-a="tab" data-v="me" aria-selected="${tab === 'me'}" class="${tab === 'me' ? 'on' : ''}">La mia carta</button></div>` : '';
     const top = `<header class="h-top">${logo()}<div class="h-tools">${tabs}<span class="chip roomcode">STANZA ${S.code}</span>${status()}
-      <button class="iconbtn" data-a="full" aria-label="Schermo intero" title="Schermo intero">${icon.full}</button></div></header>`;
+      <button class="iconbtn" data-a="full" aria-label="Schermo intero" title="Schermo intero">${icon.full}</button>
+      <button class="iconbtn" data-a="quit" aria-label="${S.phase === 'lobby' ? 'Chiudi la stanza' : 'Termina la partita'}" title="${S.phase === 'lobby' ? 'Chiudi la stanza' : 'Termina la partita'}">${icon.x}</button></div></header>`;
+    const fl = S.flash && S.flash.until > Date.now() ? `<div class="flash" role="status">${esc(S.flash.text)}</div>` : '';
     let h = '';
     if (tab === 'me' && S.localId) h = `<div class="mewrap"><div id="meslot"></div><p class="mono dim center small">Questa schermata è privata: non mostrarla agli altri.</p></div>`;
     else if (S.phase === 'lobby') h = lobby();
@@ -344,20 +412,20 @@
         <div class="avxl ${anim || true ? 'enter' : ''}">${avatar(sp)}</div>
         <h1 class="big"><span class="dim">Tocca a</span> ${esc(sp.name)}</h1>
         ${g.turnEnd ? '<div class="tbar"><i id="tbar"></i></div>' : '<p class="sub">Una parola, ad alta voce. Abbastanza per farti riconoscere, non abbastanza per svelarla.</p>'}
-        <ol class="queue">${g.order.map((id, i) => `<li class="${i < g.turnIdx ? 'done' : i === g.turnIdx ? 'now' : ''}"><span class="avw">${avatar(P(id))}</span><span>${esc(P(id).name)}</span></li>`).join('')}</ol></section>
+        <ol class="queue">${g.order.map((id, i) => `<li class="${i < g.turnIdx ? 'done' : i === g.turnIdx ? 'now' : ''}"><span class="avw">${avatar(P(id))}</span><span>${esc(P(id).name)}</span></li>`).join('')}</ol>${outStrip()}</section>
         <footer class="h-bar"><div>${catChip()}</div><div class="acts"><button class="btn ghost" data-a="vote">Vai al voto</button><button class="btn primary" data-a="next">Avanti</button></div></footer>`;
     } else if (S.phase === 'vote') {
       const cand = candidates(), need = votersNeeded(), done = need.filter(id => g.votes[id]).length;
       h = `<section class="stage"><p class="kicker red">${g.runoff ? 'Pareggio · ballottaggio' : 'Votazione aperta'}</p><h1 class="big">Chi è fuori tono?</h1>
         <p class="sub">Votate dal telefono e confermate. Si può cambiare idea finché il voto è aperto.</p>
         <div class="grid">${cand.map(id => card(P(id))).join('')}</div>
-        <div class="voters"><span class="mono">${done}/${need.length} VOTI</span>${need.map(id => `<span class="dot ${g.votes[id] ? 'on' : ''}" title="${esc(P(id).name)}"></span>`).join('')}</div></section>
+        <div class="voters"><span class="mono">${done}/${need.length} VOTI</span>${need.map(id => `<span class="dot ${g.votes[id] ? 'on' : ''}" title="${esc(P(id).name)}"></span>`).join('')}</div>${outStrip()}</section>
         <footer class="h-bar"><div>${catChip()}</div><div class="acts"><button class="btn danger" data-a="tally">Chiudi votazione</button></div></footer>`;
     } else if (S.phase === 'result') {
       const r = g.result, e = r.elim && P(r.elim);
       const by = id => Object.keys(g.votes).filter(v => g.votes[v] === id && P(v)).map(v => `<span class="vby" title="${esc(P(v).name)}">${avatar(P(v))}</span>`).join('');
       h = `<section class="stage"><div class="grid">${Object.keys(r.counts).filter(P).map(id => card(P(id), `<span class="votes">${r.counts[id]}</span>`, { av: { dead: id === r.elim }, under: `<div class="vbys">${by(id)}</div>` })).join('')}</div>
-        ${e ? `<h1 class="big rise">${esc(e.name)} è fuori</h1><p class="stampbig ${r.wasImp ? 'red' : ''} late">${r.wasImp ? 'ERA L’IMPOSTORE' : 'ERA INNOCENTE'}</p>`
+        ${e ? `<h1 class="big rise">${esc(e.name)} è fuori</h1><p class="stampbig ${r.wasImp ? 'red' : ''} late">${r.wasUnder ? 'ERA UNDERCOVER' : r.wasImp ? 'ERA L’IMPOSTORE' : 'ERA INNOCENTE'}</p>`
           : `<h1 class="big rise">Pareggio</h1><p class="sub">Nessuno viene eliminato.</p>`}</section>
         <footer class="h-bar"><div></div><div class="acts"><button class="btn primary" data-a="after">Continua</button></div></footer>`;
     } else if (S.phase === 'guess') {
@@ -370,13 +438,13 @@
     } else if (S.phase === 'end') {
       const civ = g.winner === 'civ';
       h = `<section class="stage"><p class="kicker ${civ ? '' : 'red'}">${g.stolen ? 'Parola indovinata' : g.left ? 'Partita interrotta' : 'Caso chiuso'}</p>
-        <h1 class="big">${civ ? 'Vincono gli innocenti' : g.imps.length > 1 ? 'Vincono gli impostori' : 'Vince l’impostore'}</h1>
+        <h1 class="big">${civ ? 'Vincono gli innocenti' : g.imps.length > 1 ? 'Vincono gli infiltrati' : (g.unders || []).length ? 'Vince l’undercover' : 'Vince l’impostore'}</h1>
         <div class="pair"><div><p class="kicker">La parola era</p><p class="wordbox">${g.color ? `<i class="sw" style="background:${g.color}"></i>` : ''}${esc(g.word)}</p></div>
-          ${g.mode === 'hint' || g.mode === 'undercover' ? `<div><p class="kicker">${g.mode === 'undercover' ? 'Gli impostori avevano' : 'Indizio impostori'}</p><p class="wordbox">${esc(g.sim)}</p></div>` : ''}</div>
-        <div class="grid">${g.ids.filter(P).map(id => card(P(id), '', { av: { imp: isImp(id), dead: !g.alive[id] && !isImp(id) }, under: `${isImp(id) ? '<p class="tag red">IMPOSTORE</p>' : ''}<p class="mono dim small">+${g.gained[id] || 0} · ${P(id).score} pt</p>` })).join('')}</div></section>
+          ${(g.unders || []).length || (g.mode === 'hint' && g.imps.length > (g.unders || []).length) ? `<div><p class="kicker">${(g.unders || []).length ? 'Parola degli undercover' : 'Indizio impostori'}</p><p class="wordbox">${esc(g.sim)}</p></div>` : ''}</div>
+        <div class="grid">${g.ids.filter(P).map(id => card(P(id), '', { av: { imp: isImp(id), dead: !g.alive[id] && !isImp(id) }, under: `${isUnder(id) ? '<p class="tag red">UNDERCOVER</p>' : isImp(id) ? '<p class="tag red">IMPOSTORE</p>' : ''}<p class="mono dim small">+${g.gained[id] || 0} · ${P(id).score} pt</p>` })).join('')}</div></section>
         <footer class="h-bar"><div><span class="chip">${esc(g.cat)}</span></div><div class="acts"><button class="btn ghost" data-a="lobby">Lobby</button><button class="btn primary" data-a="start">Nuova partita</button></div></footer>`;
     }
-    root.innerHTML = top + `<div class="h-body">${h}</div>` + renderSheet();
+    root.innerHTML = top + fl + `<div class="h-body">${h}</div>` + renderSheet();
     if (tab === 'me') mountLocal();
     if (S.phase === 'lobby' && tab === 'table') drawQR();
     if (sheet === 'join') mountJoinForm();
@@ -406,6 +474,9 @@
     if (!sheet) return '';
     let inner = '';
     if (sheet === 'settings') inner = settingsPanel();
+    else if (sheet === 'quit') inner = `<header><h3>${S.phase === 'lobby' ? 'Chiudi la stanza' : 'Termina la partita'}</h3><button class="btn ghost sm" data-a="close">Annulla</button></header><div class="body quit">
+      ${S.phase !== 'lobby' ? `<button class="opt" data-a="abort"><b>Interrompi la partita</b><span>Si torna nella sala d’attesa con gli stessi giocatori. Questa partita non dà punti.</span></button>` : ''}
+      <button class="opt danger" data-a="closeroom"><b>Chiudi la stanza</b><span>Tutti escono, punti e giocatori si cancellano. Poi puoi aprire una stanza nuova.</span></button></div>`;
     else if (sheet === 'join') inner = `<header><h3>Gioco anch’io</h3><button class="btn ghost sm" data-a="close">Chiudi</button></header><div class="body"><p class="dim">Entri nella partita da questo dispositivo. Quando c’è da leggere la carta, passa alla scheda «La mia carta».</p><div id="joinform"></div></div>`;
     else if (sheet.edit) inner = `<header><h3>Giocatore</h3><button class="btn ghost sm" data-a="close">Chiudi</button></header><div class="body" id="editbody"></div>`;
     return `<div class="scrim" data-a="close"></div><aside class="sheet" role="dialog" aria-modal="true">${inner}</aside>`;
@@ -435,9 +506,16 @@
         <div class="chips" style="margin-top:10px"><button class="chip" data-a="cats-all">Tutti</button><button class="chip" data-a="cats-none">Nessuno</button></div></div>
       <div class="sec"><h4>Le vostre parole</h4><p class="h">Una per riga. Con la virgola aggiungi la parola simile: <b>Pizza, Focaccia</b></p>
         <textarea class="custom" id="custom" placeholder="Prof Fumagalli, Relatrice">${esc(s.custom)}</textarea></div>
-      <div class="sec"><h4>Impostori</h4><p class="h">Con ${n} giocatori fino a ${maxImps(n)}.</p>
-        <div class="rowc"><div class="stepper"><button class="iconbtn" data-a="imp" data-d="-1" aria-label="Meno">−</button><b>${s.impostors}</b><button class="iconbtn" data-a="imp" data-d="1" aria-label="Più">+</button></div>${sw('randomImp', 'Numero a sorpresa')}</div></div>
-      <div class="sec"><h4>Cosa vede l’impostore</h4><div class="opts">${Object.entries(FT.IMP_MODES).map(([k, m]) => `<button class="opt ${s.impMode === k ? 'on' : ''}" data-a="set" data-k="impMode" data-v="${k}"><b>${m.t}</b><span>${m.d}</span></button>`).join('')}</div></div>
+      <div class="sec"><h4>Combo pronte</h4><p class="h">Un tocco e cambiano ruoli, giri e tempo insieme. Poi puoi ritoccare tutto qui sotto.</p>
+        <div class="opts presets">${PRESETS.map(p => `<button class="opt ${presetOn(s) === p.id ? 'on' : ''}" data-a="preset" data-id="${p.id}"><b>${p.t}</b><span>${p.d}</span></button>`).join('')}</div></div>
+      <div class="sec"><h4>Infiltrati</h4><p class="h">Con ${n} giocatori fino a ${maxImps(n)} in tutto. L’<b>impostore</b> sa di esserlo; l’<b>undercover</b> riceve una parola simile e non lo sa.</p>
+        <div class="roles">
+          <div class="rolebox"><span class="lbl">Impostori</span><div class="stepper"><button class="iconbtn" data-a="role" data-k="impostors" data-d="-1" aria-label="Un impostore in meno">−</button><b>${s.impostors}</b><button class="iconbtn" data-a="role" data-k="impostors" data-d="1" aria-label="Un impostore in più">+</button></div></div>
+          <div class="rolebox"><span class="lbl">Undercover</span><div class="stepper"><button class="iconbtn" data-a="role" data-k="undercover" data-d="-1" aria-label="Un undercover in meno">−</button><b>${s.undercover}</b><button class="iconbtn" data-a="role" data-k="undercover" data-d="1" aria-label="Un undercover in più">+</button></div></div>
+        </div>
+        <div class="rowc" style="margin-top:12px">${sw('randomImp', 'Numero a sorpresa')}</div>
+        ${s.randomImp ? '<p class="h" style="margin-top:8px">Ogni partita esce un numero diverso di infiltrati. Se hai messo sia impostori sia undercover, i ruoli si mescolano.</p>' : ''}</div>
+      ${s.impostors || s.randomImp ? `<div class="sec"><h4>Cosa vede l’impostore</h4><div class="opts">${Object.entries(FT.IMP_MODES).map(([k, m]) => `<button class="opt ${s.impMode === k ? 'on' : ''}" data-a="set" data-k="impMode" data-v="${k}"><b>${m.t}</b><span>${m.d}</span></button>`).join('')}</div></div>` : ''}
       <div class="sec"><h4>Giri di indizi prima del voto</h4>${seg('clueRounds', [[1, '1'], [2, '2'], [3, '3']])}</div>
       <div class="sec"><h4>Tempo per turno</h4>${seg('turnTime', [[0, 'Libero'], [15, '15 s'], [30, '30 s'], [45, '45 s']])}</div>
       <div class="sec"><h4>Fine partita</h4>${seg('endMode', [['survival', 'Fino all’ultimo'], ['single', 'Voto unico']])}
@@ -476,7 +554,16 @@
       case 'cat': s.cats = s.cats.includes(b.dataset.id) ? s.cats.filter(x => x !== b.dataset.id) : [...s.cats, b.dataset.id]; update(); break;
       case 'cats-all': s.cats = PACKS.map(p => p.id); update(); break;
       case 'cats-none': s.cats = []; update(); break;
-      case 'imp': { const n = Math.max(3, ready().length); s.impostors = Math.max(1, Math.min(maxImps(n), s.impostors + +b.dataset.d)); update(); break; }
+      case 'role': {
+        const n = Math.max(3, ready().length), k = b.dataset.k, o = k === 'impostors' ? 'undercover' : 'impostors';
+        const v = Math.max(0, s[k] + +b.dataset.d);
+        if (v + s[o] > maxImps(n)) { toast(`Con ${n} giocatori al massimo ${maxImps(n)} infiltrati`); break; }
+        if (v + s[o] < 1) { toast('Serve almeno un impostore o un undercover'); break; }
+        s[k] = v; update(); break; }
+      case 'preset': { const pr = PRESETS.find(p => p.id === b.dataset.id); if (pr) { Object.assign(s, pr.v); update(); toast('Combo ' + pr.t); } break; }
+      case 'quit': sheet = 'quit'; render(); break;
+      case 'abort': sheet = null; toLobby('Partita interrotta dall’host'); break;
+      case 'closeroom': sheet = null; closeRoom(); break;
       case 'toggle': s[b.dataset.k] = !s[b.dataset.k]; update(); break;
       case 'set': { const v = b.dataset.v; s[b.dataset.k] = isNaN(+v) ? v : +v; update(); break; }
       case 'ed-name': { const p = P(sheet.edit), v = $('#ed-name').value; if (p && v.trim()) { p.name = cleanName(v, p.id); update(); } break; }
@@ -489,7 +576,7 @@
   root.addEventListener('keydown', e => { if (e.target.closest('#meslot')) return; if ((e.key === 'Enter' || e.key === ' ') && e.target.matches('.suspect[data-a]')) { e.preventDefault(); e.target.click(); } });
   root.addEventListener('input', e => { if (e.target.id === 'custom') { S.settings.custom = e.target.value; save(); } });
   document.addEventListener('keydown', e => {
-    if (e.target.matches('input,textarea')) return;
+    if (!S || e.target.matches('input,textarea')) return;
     if (e.key === 'Escape' && sheet) { sheet = null; render(); }
     if ((e.key === ' ' || e.key === 'ArrowRight') && S.phase === 'clues' && tab === 'table' && !sheet) { e.preventDefault(); nextTurn(); }
   });
@@ -504,9 +591,28 @@
   root.addEventListener('focusout', () => setTimeout(() => { const a = document.activeElement; if (!a || !a.matches || !a.matches('input,textarea')) _render(); }, 50));
 
   window.addEventListener('beforeunload', () => { save(); try { peer && peer.destroy(); } catch (e) {} });
-  if (S.localId) attachLocal();
-  render();
-  startPeer();
-  FT.keepAwake();
+  function boot(st) {
+    prepare(st);
+    store.set('ft3-live', S.code, true);   // questa scheda tiene la stanza: un ricaricamento la riprende senza chiedere
+    if (S.flash) S.flash = null;
+    if (S.localId) attachLocal();
+    render(); startPeer(); FT.keepAwake();
+  }
+  // C'è una stanza in sospeso? Chiedi se riprenderla
+  const qs = new URLSearchParams(location.search);
+  const pending = saved && saved.code && ((saved.players || []).length || saved.game) && Date.now() - (saved.ts || 0) < 24 * 3600e3;
+  if (qs.has('nuova')) { store.del(KEY); store.del(PKEY); boot(null); }
+  else if (pending && !qs.has('riprendi') && store.get('ft3-live', true) !== saved.code) {
+    const ph = { lobby: 'sala d’attesa', reveal: 'lettura delle carte', clues: 'giro di parole', vote: 'votazione', result: 'risultato', guess: 'ultima chance', end: 'fine partita' }[saved.phase] || '';
+    const ago = Math.max(1, Math.round((Date.now() - (saved.ts || Date.now())) / 60000));
+    root.innerHTML = `<header class="h-top">${logo()}</header><div class="h-body"><section class="stage resume">
+      <p class="kicker">Partita in sospeso</p><h1 class="big">Stanza ${esc(saved.code)}</h1>
+      <p class="sub">${(saved.players || []).length} giocatori · ${esc(ph)}${saved.n ? ` · partita ${saved.n}` : ''} · ${ago < 60 ? ago + ' min fa' : Math.round(ago / 60) + ' ore fa'}</p>
+      <div class="grid">${(saved.players || []).slice(0, 12).map(p => `<div class="suspect"><div class="avw">${avatar(p)}</div><p class="nm">${esc(p.name)}</p></div>`).join('')}</div>
+      <div class="acts center"><button class="btn ghost" id="r-new">Apri una stanza nuova</button><button class="btn primary" id="r-go">Riprendi la partita</button></div>
+      <p class="mono dim small">Riprendendo, i giocatori rientrano da soli con lo stesso codice.</p></section></div>`;
+    $('#r-go').onclick = () => { history.replaceState(null, '', location.pathname + '?riprendi=1' + FT.phParam()); boot(saved); };
+    $('#r-new').onclick = () => { store.del(KEY); store.del(PKEY); FT.photos = {}; boot(null); };
+  } else boot(pending ? saved : null);
   window.__FT_HOST = { get S() { return S; } };
 })();

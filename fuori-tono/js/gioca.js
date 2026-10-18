@@ -8,9 +8,9 @@
   let peer = null, conn = null, ui = null, joined = false, retryT = null, joinErr = '';
 
   function showJoin() {
-    joined = false; ui = null;
-    try { conn && conn.close(); } catch (e) {}
-    conn = null;
+    joined = false; ui = null; clearTimeout(retryT);
+    const old = conn; conn = null;           // prima azzero, così la chiusura non viene presa per un'interruzione
+    try { old && old.close(); } catch (e) {}
     app.innerHTML = `<header class="pl-top">${FT.logo('sm')}<a class="mono dim small" href="./">Indietro</a></header>
       <main class="pl-main"><p class="mono dim center">${code ? `STANZA ${FT.esc(code)}` : 'ENTRA IN PARTITA'}</p><h1 class="title">Chi sei?</h1>
       ${joinErr ? `<p class="err center">${FT.esc(joinErr)}</p>` : ''}<div id="pf"></div></main>`;
@@ -49,7 +49,7 @@
     } else if (peer.open) dial();
   }
   function dial() {
-    try { conn && conn.close(); } catch (e) {}
+    { const old = conn; conn = null; try { old && old.close(); } catch (e) {} }
     const c = conn = peer.connect(FT.PREFIX + code, { reliable: true });
     c.on('open', () => { banner(false); c.send({ t: 'hello', id: me.id, name: me.name, icon: me.icon, photo: me.photo || '' }); });
     c.on('data', onMsg);
@@ -63,20 +63,29 @@
     clearTimeout(retryT);
     retryT = setTimeout(() => { if (!conn || !conn.open) connect(); }, 2500);
   }
+  let lastMsg = 0;
   function onMsg(d) {
     if (!d) return;
+    lastMsg = Date.now(); banner(false);
+    if (d.t === 'ping') return;
     if (d.t === 'kicked') { joinErr = 'L’host ti ha tolto dalla stanza.'; showJoin(); return; }
     if (d.t === 'full') { joinErr = 'La stanza è piena (massimo 20).'; showJoin(); return; }
+    if (d.t === 'closed') { FT.store.del('ft-last'); joinErr = 'L’host ha chiuso la stanza. Grazie per aver giocato!'; code = ''; showJoin(); return; }
     if (!joined) {
       joined = true; app.innerHTML = '';
+      FT.store.set('ft-last', JSON.stringify({ code, ts: Date.now() }));
       ui = FT.PlayerUI(app, {
         send: m => { if (conn && conn.open) conn.send(m); },
-        onExit: () => { joinErr = ''; setTimeout(showJoin, 150); },
+        onExit: () => { FT.store.del('ft-last'); joinErr = ''; setTimeout(showJoin, 150); },
         onProfile: p => { me = { ...me, ...p }; FT.profile.save(me); }
       });
     }
     ui.receive(d);
   }
+  // se l'host tace da troppo, il collegamento è morto anche se il browser non lo dice: ricollegati
+  setInterval(() => {
+    if (joined && lastMsg && Date.now() - lastMsg > 9000) { lastMsg = Date.now(); banner(true); const old = conn; conn = null; try { old && old.close(); } catch (e) {} conn = { open: false }; connect(); }
+  }, 2000);
   document.addEventListener('visibilitychange', () => { if (!document.hidden && joined && (!conn || !conn.open)) connect(); });
 
   if (code && me.name && q.get('r')) { connecting(); connect(); } else showJoin();

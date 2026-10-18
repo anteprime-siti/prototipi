@@ -283,3 +283,27 @@ details.peek[open] summary{margin-bottom:10px}
   .h-tools .tabs button { white-space: nowrap; min-height: 40px; }
   .h-tools .status, .h-tools [data-a="full"] { display: none; }
 }
+
+/* v4: avvisi, fuori dal gioco, termina partita, combo, ruoli, ripresa */
+.flash { position: fixed; left: 50%; top: 88px; transform: translateX(-50%); z-index: 60; padding: 12px 20px; border-radius: 999px; background: var(--red); color: #fff; font-weight: 700; box-shadow: 0 16px 40px -12px rgba(0,0,0,.6); animation: flash-in .35s var(--ease); max-width: calc(100vw - 32px); text-align: center; }
+@keyframes flash-in { from { opacity: 0; transform: translate(-50%, -10px); } }
+.outstrip { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 10px 16px; margin-top: 22px; padding-top: 16px; border-top: 1px dashed var(--line2); }
+.outp { display: inline-flex; align-items: center; gap: 8px; opacity: .85; }
+.outp .avw .av { width: 34px; height: 34px; display: block; }
+.outp b { display: block; font-size: 14px; text-decoration: line-through; text-decoration-color: var(--red); }
+.outp i { display: block; font: 500 11px var(--mono); font-style: normal; letter-spacing: .06em; text-transform: uppercase; color: var(--dim); }
+.outp.imp i, .outp.under i { color: var(--red2); }
+.outline { margin-top: 10px; }
+.quit { display: grid; gap: 12px; }
+.opt.danger { border-color: color-mix(in srgb, var(--red) 55%, transparent); }
+.opt.danger b { color: var(--red2); }
+.presets { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.roles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 10px; }
+.rolebox { display: grid; gap: 8px; justify-items: start; padding: 12px 14px; border: 1px solid var(--line); border-radius: 14px; background: var(--bg2); }
+.resume .grid { margin: 18px 0; }
+.resume .acts { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-bottom: 12px; }
+.resume-bar { margin: 18px 0 6px; display: grid; gap: 10px; }
+.resume-bar .row { display: flex; flex-wrap: wrap; gap: 10px; }
+.resume-bar .btn { display: inline-flex; flex-direction: column; align-items: flex-start; gap: 2px; text-decoration: none; padding-block: 12px; height: auto; }
+.resume-bar small { font: 500 12px var(--mono); opacity: .7; }
+@media (max-width: 520px) { .presets, .roles { grid-template-columns: minmax(0, 1fr); } }

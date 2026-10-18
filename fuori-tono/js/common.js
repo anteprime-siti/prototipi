@@ -105,8 +105,7 @@ window.FT = (() => {
   const IMP_MODES = {
     nothing: { t: 'Nessun indizio', d: 'Sa di essere l’impostore e non vede niente.' },
     category: { t: 'Solo la categoria', d: 'Sa di essere l’impostore e conosce solo il tema.' },
-    hint: { t: 'Parola simile', d: 'Sa di essere l’impostore e riceve una parola vicina come indizio.' },
-    undercover: { t: 'Undercover', d: 'Riceve una parola simile e non sa di essere l’impostore.' }
+    hint: { t: 'Parola simile', d: 'Sa di essere l’impostore e riceve una parola vicina come indizio.' }
   };
 
   return { PREFIX, COLORS, ICONS, ICON_KEYS, glyph, avatar, logo, peerOpts, phParam, esc, norm, store, rid, shuffle, profile, shrinkPhoto, IMP_MODES, keepAwake, photos: {} };

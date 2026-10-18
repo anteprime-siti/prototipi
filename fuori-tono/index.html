@@ -8,7 +8,7 @@
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27%3E%3Crect width=%27100%27 height=%27100%27 rx=%2722%27 fill=%27%230A0A0C%27/%3E%3Ccircle cx=%2750%27 cy=%2750%27 r=%2726%27 fill=%27none%27 stroke=%27%23FF3B30%27 stroke-width=%2712%27/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css?v=3">
+<link rel="stylesheet" href="css/style.css?v=5">
 <title>Fuori Tono</title>
 <meta name="description" content="Fuori Tono: il gioco dell’impostore da fare a voce. Uno schermo fa da tavolo, ognuno gioca dal proprio telefono.">
 </head>
@@ -19,6 +19,7 @@
     <p class="kicker red">Gioco di società · da 3 a 20 giocatori</p>
     <h1 class="logo xl">Fuori<br>T<span class="lo">o</span>no</h1>
     <p class="tagline">Tutti conoscono la parola segreta. Uno di voi no. Trovatelo prima che se ne accorga.</p>
+    <div class="resume-bar" id="resume" hidden></div>
     <div class="choices">
       <a class="choice hot" id="host" href="host.html">
         <span class="mono">01 · Schermo comune</span><span class="t">Ospita una partita</span>
@@ -39,6 +40,19 @@
 <script>
 const q = new URLSearchParams(location.search), ph = q.get('ph') ? '&ph=' + encodeURIComponent(q.get('ph')) : '';
 if (ph) document.getElementById('host').href = 'host.html?' + ph.slice(1);
+// Sessioni in sospeso su questo dispositivo: una stanza ospitata o una stanza in cui si stava giocando
+(() => {
+  const out = [], now = Date.now();
+  try {
+    const h = JSON.parse(localStorage.getItem('ft3-host') || 'null');
+    if (h && h.code && ((h.players || []).length || h.game) && now - (h.ts || 0) < 864e5)
+      out.push(`<a class="btn primary" href="host.html?riprendi=1${ph}">Riprendi la stanza ${h.code}<small>${(h.players || []).length} giocatori · la ospiti tu</small></a>`);
+    const l = JSON.parse(localStorage.getItem('ft-last') || 'null');
+    if (l && /^[A-Z]{4}$/.test(l.code) && now - l.ts < 432e5 && (!h || h.code !== l.code))
+      out.push(`<a class="btn ghost" href="gioca.html?r=${l.code}${ph}">Rientra nella stanza ${l.code}<small>come giocatore</small></a>`);
+  } catch (e) {}
+  if (out.length) { const r = document.getElementById('resume'); r.innerHTML = '<p class="mono dim">Hai una partita in sospeso</p><div class="row">' + out.join('') + '</div>'; r.hidden = false; }
+})();
 document.getElementById('join').addEventListener('submit', e => {
   e.preventDefault();
   const c = document.getElementById('code').value.toUpperCase().replace(/[^A-Z]/g, '');
