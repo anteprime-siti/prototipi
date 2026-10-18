@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#0A0F1F">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27%3E%3Crect width=%27100%27 height=%27100%27 rx=%2722%27 fill=%27%230A0F1F%27/%3E%3Ccircle cx=%2750%27 cy=%2750%27 r=%2728%27 fill=%27%23E8C26A%27/%3E%3Ccircle cx=%2762%27 cy=%2744%27 r=%2724%27 fill=%27%230A0F1F%27/%3E%3Cpath d=%27M10 86h80%27 stroke=%27%23C8102E%27 stroke-width=%276%27 stroke-dasharray=%276 6%27/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Ruslan+Display&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css?v=1">
+<title>Lupus slavo</title>
+<meta name="description" content="Lupus slavo: il gioco del lupo mannaro da fare a voce, tra leggende slave. Uno schermo fa da narratore, ognuno gioca dal proprio telefono.">
+</head>
+<body>
+<main class="landing">
+  <header><span class="mono dim">Un gioco di Sebastyan Buryas</span></header>
+  <div class="embroid" aria-hidden="true"></div>
+  <section class="hero">
+    <p class="kicker red">Gioco di società · da 4 a 20 giocatori</p>
+    <h1 class="logo xl">Lupus<br>Slav<span class="lo" aria-hidden="true"></span></h1>
+    <p class="tagline">Di notte i vovkulaky escono dal bosco. Di giorno sembrano vicini di casa qualunque. Scopriteli prima che il villaggio resti vuoto.</p>
+    <div class="resume-bar" id="resume" hidden></div>
+    <div class="choices">
+      <a class="choice hot" id="host" href="host.html">
+        <span class="mono">01 · Il narratore</span><span class="t">Ospita una partita</span>
+        <span class="d">Questo dispositivo fa da narratore: TV, computer o tablet. Mostra il QR, racconta la notte, conta i voti. Può anche parlare.</span>
+      </a>
+      <div class="choice">
+        <span class="mono">02 · Il tuo telefono</span><span class="t">Entra nel villaggio</span>
+        <span class="d">Scrivi il codice che vedi sullo schermo del narratore, oppure inquadra il suo QR.</span>
+        <form id="join" autocomplete="off"><label class="sr" for="code">Codice della stanza</label><input id="code" maxlength="4" placeholder="ABCD" autocapitalize="characters"><button class="btn primary" type="submit">Entra</button></form>
+      </div>
+    </div>
+    <ol class="steps"><li><b>Scopri chi sei</b>Lupo, veggente, guaritore, cacciatore o semplice abitante. Lo sai solo tu.</li>
+      <li><b>Notte</b>Tutti scelgono qualcuno sul telefono, così nessuno capisce chi agisce davvero. I lupi cacciano.</li>
+      <li><b>Giorno</b>Il narratore svela chi è morto. Discutete, accusate, votate chi cacciare dal villaggio.</li></ol>
+  </section>
+  <footer class="foot"><span>Lupus slavo · 2026</span><span>Funziona nel browser, senza app da installare.</span></footer>
+</main>
+<script>
+const q = new URLSearchParams(location.search), ph = q.get('ph') ? '&ph=' + encodeURIComponent(q.get('ph')) : '';
+if (ph) document.getElementById('host').href = 'host.html?' + ph.slice(1);
+// Sessioni in sospeso su questo dispositivo: una stanza ospitata o una stanza in cui si stava giocando
+(() => {
+  const out = [], now = Date.now();
+  try {
+    const h = JSON.parse(localStorage.getItem('ls1-host') || 'null');
+    if (h && h.code && ((h.players || []).length || h.game) && now - (h.ts || 0) < 864e5)
+      out.push(`<a class="btn primary" href="host.html?riprendi=1${ph}">Riprendi la stanza ${h.code}<small>${(h.players || []).length} giocatori · la ospiti tu</small></a>`);
+    const l = JSON.parse(localStorage.getItem('ls-last') || 'null');
+    if (l && /^[A-Z]{4}$/.test(l.code) && now - l.ts < 432e5 && (!h || h.code !== l.code))
+      out.push(`<a class="btn ghost" href="gioca.html?r=${l.code}${ph}">Rientra nella stanza ${l.code}<small>come giocatore</small></a>`);
+  } catch (e) {}
+  if (out.length) { const r = document.getElementById('resume'); r.innerHTML = '<p class="mono dim">Hai una partita in sospeso</p><div class="row">' + out.join('') + '</div>'; r.hidden = false; }
+})();
+document.getElementById('join').addEventListener('submit', e => {
+  e.preventDefault();
+  const c = document.getElementById('code').value.toUpperCase().replace(/[^A-Z]/g, '');
+  location.href = 'gioca.html' + (c.length === 4 ? '?r=' + c + ph : (ph ? '?' + ph.slice(1) : ''));
+});
+</script>
+</body>
+</html>
