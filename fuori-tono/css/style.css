@@ -10,7 +10,7 @@
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%}
 body{background:var(--bg);color:var(--ink);font-family:var(--body);-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent;overflow-x:hidden}
-body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.06;
+body::before{content:'';position:fixed;top:0;right:0;bottom:0;left:0;pointer-events:none;z-index:0;opacity:.06;
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
 button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 input,textarea{font:inherit;color:inherit}
@@ -72,7 +72,7 @@ textarea.custom{min-height:110px;font-size:.95rem;resize:vertical}
 .word.sm{font-size:1.9rem}
 
 /* ================== LANDING ================== */
-.landing{position:relative;z-index:1;min-height:100dvh;display:flex;flex-direction:column;padding:28px clamp(20px,5vw,72px) 32px;max-width:1200px;margin:0 auto}
+.landing{position:relative;z-index:1;min-height:100vh;min-height:100dvh;display:flex;flex-direction:column;padding:28px clamp(20px,5vw,72px) 32px;max-width:1200px;margin:0 auto}
 .landing .hero{flex:1;display:flex;flex-direction:column;justify-content:center;gap:18px;padding:40px 0}
 .landing .tagline{font-size:clamp(1.1rem,2.4vw,1.5rem);color:var(--dim);max-width:30ch;line-height:1.35}
 .landing .choices{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;margin-top:20px}
@@ -93,7 +93,7 @@ textarea.custom{min-height:110px;font-size:.95rem;resize:vertical}
 
 /* ================== HOST ================== */
 .host{font-size:clamp(14px,calc(.55vw + .55vmin),24px)}
-.host #app{position:relative;z-index:1;min-height:100dvh;display:flex;flex-direction:column}
+.host #app{position:relative;z-index:1;min-height:100vh;min-height:100dvh;display:flex;flex-direction:column}
 .h-top{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:1.2rem clamp(16px,3vw,3rem);border-bottom:1px solid var(--line)}
 .h-tools{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end}
 .status{display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--dim)}
@@ -167,7 +167,7 @@ textarea.custom{min-height:110px;font-size:.95rem;resize:vertical}
 .mewrap #meslot{width:100%;max-width:30rem}
 
 /* fogli laterali */
-.scrim{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:20;animation:fade .2s both}
+.scrim{position:fixed;top:0;right:0;bottom:0;left:0;background:rgba(0,0,0,.6);z-index:20;animation:fade .2s both}
 @keyframes fade{from{opacity:0}}
 .sheet{position:fixed;top:0;right:0;bottom:0;width:min(40rem,100vw);background:var(--bg2);border-left:1px solid var(--line2);z-index:21;display:flex;flex-direction:column;animation:slide .28s var(--ease) both;font-size:15px}
 @keyframes slide{from{transform:translateX(100%)}}
@@ -213,7 +213,7 @@ textarea.custom{min-height:110px;font-size:.95rem;resize:vertical}
 
 /* ================== GIOCATORE ================== */
 .phone #app,.pl-app{position:relative;z-index:1}
-.phone #app{min-height:100dvh;max-width:32rem;margin:0 auto;display:flex;flex-direction:column}
+.phone #app{min-height:100vh;min-height:100dvh;max-width:32rem;margin:0 auto;display:flex;flex-direction:column}
 .pl-app{display:flex;flex-direction:column;flex:1}
 .pl-top{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:16px 18px;border-bottom:1px solid var(--line)}
 .mechip{display:flex;align-items:center;gap:8px;font-weight:700;max-width:58%;padding:4px 10px 4px 4px;border:1px solid var(--line2);border-radius:999px}
@@ -236,7 +236,7 @@ textarea.custom{min-height:110px;font-size:.95rem;resize:vertical}
 .secret .swatch{width:46%;aspect-ratio:1;border-radius:16px;margin:0 auto}
 .secret .redact{position:absolute;left:18px;right:18px;top:50%;transform:translateY(-50%);height:96px;background:#000;border-radius:6px;display:grid;place-items:center;
   font-family:var(--mono);font-size:.74rem;letter-spacing:.16em;color:var(--dim);transition:transform .25s var(--ease),opacity .25s}
-.secret .redact::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(-45deg,transparent 0 10px,rgba(255,255,255,.03) 10px 20px);border-radius:6px}
+.secret .redact::before{content:'';position:absolute;top:0;right:0;bottom:0;left:0;background:repeating-linear-gradient(-45deg,transparent 0 10px,rgba(255,255,255,.03) 10px 20px);border-radius:6px}
 .secret.open .ds-body{filter:none;opacity:1}
 .secret.open .redact{opacity:0;transform:translateY(-50%) scaleX(.2)}
 .secret .word.red{color:var(--red)}
@@ -295,7 +295,7 @@ details.peek[open] summary{margin-bottom:10px}
 .outp.imp i, .outp.under i { color: var(--red2); }
 .outline { margin-top: 10px; }
 .quit { display: grid; gap: 12px; }
-.opt.danger { border-color: color-mix(in srgb, var(--red) 55%, transparent); }
+.opt.danger { border-color: rgba(255,59,48,.55); border-color: color-mix(in srgb, var(--red) 55%, transparent); }
 .opt.danger b { color: var(--red2); }
 .presets { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .roles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 10px; }
@@ -304,7 +304,7 @@ details.peek[open] summary{margin-bottom:10px}
 .resume .acts { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-bottom: 12px; }
 .resume-bar { margin: 18px 0 6px; display: grid; gap: 10px; }
 .resume-bar .row { display: flex; flex-wrap: wrap; gap: 10px; }
-.resume-bar .btn { display: inline-flex; flex-direction: column; align-items: flex-start; gap: 2px; text-decoration: none; padding-block: 12px; height: auto; }
+.resume-bar .btn { display: inline-flex; flex-direction: column; align-items: flex-start; gap: 2px; text-decoration: none; padding-top: 12px; padding-bottom: 12px; height: auto; }
 .resume-bar small { font: 500 12px var(--mono); opacity: .7; }
 @media (max-width: 520px) { .presets, .roles { grid-template-columns: minmax(0, 1fr); } }
 .secretbox { letter-spacing: .08em; color: var(--dim); }
