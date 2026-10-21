@@ -89,6 +89,21 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 #night .nclock{font-size:260px;font-weight:600;letter-spacing:-8px;color:#b7a48a;font-variant-numeric:tabular-nums;line-height:1}
 #night .nline{font-size:36px;color:#6f6556;font-weight:600;margin-top:20px}
 #err{position:absolute;right:110px;top:56px;font-size:20px;color:var(--ink-3);font-weight:600}
+
+#stage.black{background:#000!important;color:var(--ink)}
+#stage.black #sun,#stage.black #grain{display:none}
+#stage.black{--ink:#e8e1d6;--ink-2:rgba(232,225,214,.72);--ink-3:rgba(232,225,214,.45);--line:rgba(232,225,214,.14);--glass:transparent;--glass-2:rgba(232,225,214,.08)}
+#stage.black #now{box-shadow:inset 0 0 0 2px var(--line)}
+#stage.black .hour,#stage.black .day{box-shadow:inset 0 0 0 2px var(--line)}
+#stage.black #clock span{opacity:.35}
+#stage.black .tbox{background:#000;box-shadow:inset 0 0 0 2px var(--line)}
+#stage.black .tact{background:var(--ink);color:#000}
+#stage.black .tact.ghost{background:var(--glass-2);color:var(--ink)}
+.foot-btns{display:flex}
+.foot-btns button{margin-left:16px}
+#mode-btn{display:flex;align-items:center;padding:12px 26px;border-radius:999px;background:var(--glass-2);font-size:26px;font-weight:700;color:var(--ink)}
+#mode-btn i{width:26px;height:26px;border-radius:50%;margin-right:12px;box-shadow:inset 0 0 0 2px var(--ink);background:linear-gradient(135deg,#ffc98a,#7a5a8c)}
+#stage.black #mode-btn i{background:#000}
 @media (prefers-reduced-motion:reduce){#stage,#sun,.f,#night{transition:none}#t-big.done{animation:none}}
 </style>
 </head>
@@ -127,7 +142,10 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 
   <footer id="foot">
     <span id="updated"></span>
+    <div class="foot-btns">
+    <button id="mode-btn" class="f"><i></i><span id="mode-label">Sfondo: cielo</span></button>
     <button id="timer-btn" class="f"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2M9 2h6"/></svg>Timer<span id="mini-timer"></span></button>
+    </div>
   </footer>
 
   <div id="timer" hidden>
@@ -365,6 +383,18 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   $('t-reset').addEventListener('click', function(){ setMinutes(T.total / 60); });
   $('t-close').addEventListener('click', closeTimer);
   $('timer-btn').addEventListener('click', openTimer);
+  function getMode(){ var q = /[?&]nero\b/.test(location.search); if (q) return 'nero'; try { return localStorage.getItem('finestra-sfondo') || 'cielo'; } catch (e) { return 'cielo'; } }
+  function applyMode(m){
+    stage.classList.toggle('black', m === 'nero');
+    $('mode-label').textContent = m === 'nero' ? 'Sfondo: nero' : 'Sfondo: cielo';
+  }
+  var mode = getMode();
+  applyMode(mode);
+  $('mode-btn').addEventListener('click', function(){
+    mode = mode === 'nero' ? 'cielo' : 'nero';
+    try { localStorage.setItem('finestra-sfondo', mode); } catch (e) {}
+    applyMode(mode);
+  });
   Array.prototype.forEach.call(stage.querySelectorAll('.f'), function(b){ b.addEventListener('mouseenter', function(){ focus(b); }); });
 
   function move(dir){
