@@ -1,0 +1,421 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Finestra · Sangano</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --sky-a:#f6c79a; --sky-b:#e88a6a; --sky-c:#6d5a8a;
+  --ink:#fffaf3; --ink-2:rgba(255,250,243,.78); --ink-3:rgba(255,250,243,.55);
+  --glass:rgba(255,255,255,.14); --glass-2:rgba(255,255,255,.22); --line:rgba(255,255,255,.22);
+  --accent:#ffd27a;
+  --font:'Figtree','Segoe UI','Helvetica Neue',Arial,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+[hidden]{display:none!important}
+html,body{width:100%;height:100%;overflow:hidden;background:#140f1c}
+body{font-family:var(--font);color:var(--ink);-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+
+#stage{position:absolute;left:0;top:0;width:1920px;height:1080px;transform-origin:0 0;overflow:hidden;
+  background:linear-gradient(160deg,var(--sky-a) 0%,var(--sky-b) 48%,var(--sky-c) 100%);transition:background 2s ease}
+#sun{position:absolute;width:900px;height:900px;border-radius:50%;right:-180px;top:-360px;pointer-events:none;
+  background:radial-gradient(closest-side,rgba(255,240,200,.55),rgba(255,240,200,0));transition:opacity 2s}
+#grain{position:absolute;top:0;left:0;right:0;bottom:0;pointer-events:none;opacity:.06;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='.8'/%3E%3C/svg%3E")}
+
+#left{position:absolute;left:110px;top:70px;width:900px}
+#greet{font-size:40px;font-weight:600;color:var(--ink-2)}
+#clock{font-size:250px;font-weight:700;letter-spacing:-10px;line-height:.86;margin:14px 0 14px -8px;font-variant-numeric:tabular-nums}
+#clock span{opacity:.5}
+#date{font-size:46px;font-weight:500}
+#place{margin-top:10px;font-size:26px;color:var(--ink-3);font-weight:600;letter-spacing:3px;text-transform:uppercase}
+#sunline{display:flex;margin-top:22px}
+.sunbit{display:flex;align-items:center;margin-right:44px;font-size:28px;font-weight:600}
+.sunbit svg{width:40px;height:40px;margin-right:12px}
+.sunbit small{display:block;font-size:20px;font-weight:500;color:var(--ink-3);letter-spacing:2px;text-transform:uppercase;margin-bottom:2px}
+
+#now{position:absolute;right:110px;top:80px;width:760px;padding:44px 48px;border-radius:40px;background:var(--glass);box-shadow:inset 0 0 0 2px var(--line)}
+.now-top{display:flex;align-items:center}
+#now-icon{width:190px;height:190px;margin-right:30px;flex:none}
+#now-temp{font-size:150px;font-weight:700;letter-spacing:-6px;line-height:1}
+#now-desc{font-size:40px;font-weight:600;margin-top:6px}
+.now-stats{display:flex;margin-top:30px;padding-top:26px;border-top:2px solid var(--line)}
+.stat{flex:1}
+.stat small{display:block;font-size:20px;font-weight:600;color:var(--ink-3);letter-spacing:2px;text-transform:uppercase;margin-bottom:6px}
+.stat b{font-size:34px;font-weight:700;font-variant-numeric:tabular-nums}
+
+#hours{position:absolute;left:110px;right:110px;top:596px;display:flex}
+.hour{flex:1;margin-right:16px;padding:22px 10px 20px;border-radius:26px;background:var(--glass);text-align:center}
+.hour:last-child{margin-right:0}
+.hour small{display:block;font-size:24px;font-weight:600;color:var(--ink-2)}
+.hour svg{width:66px;height:66px;margin:10px auto}
+.hour b{display:block;font-size:34px;font-weight:700}
+.hour i{display:block;font-style:normal;font-size:20px;font-weight:600;color:#bfe3ff;margin-top:4px;min-height:24px}
+
+#days{position:absolute;left:110px;right:110px;top:836px;display:flex}
+.day{flex:1;display:flex;align-items:center;margin-right:16px;padding:18px 24px;border-radius:26px;background:var(--glass)}
+.day:last-child{margin-right:0}
+.day svg{width:64px;height:64px;margin-right:16px;flex:none}
+.day small{display:block;font-size:24px;font-weight:700;margin-bottom:4px}
+.day b{font-size:28px;font-weight:700;font-variant-numeric:tabular-nums}
+.day b span{color:var(--ink-3);font-weight:600;margin-left:8px}
+
+#foot{position:absolute;left:110px;right:110px;bottom:40px;display:flex;justify-content:space-between;align-items:center;font-size:22px;color:var(--ink-3);font-weight:600}
+#timer-btn{display:flex;align-items:center;padding:12px 26px;border-radius:999px;background:var(--glass-2);font-size:26px;font-weight:700;color:var(--ink)}
+#timer-btn svg{width:30px;height:30px;margin-right:12px}
+#mini-timer{font-variant-numeric:tabular-nums;margin-left:12px;color:var(--accent)}
+.f.focus{box-shadow:0 0 0 5px var(--ink),0 14px 34px rgba(0,0,0,.25);transform:scale(1.04)}
+.f{transition:transform .15s,box-shadow .15s}
+
+#timer{position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(14,10,22,.82);display:flex;align-items:center;justify-content:center;z-index:10}
+.tbox{width:1300px;padding:70px 80px;border-radius:48px;background:#2a2236;box-shadow:inset 0 0 0 2px var(--line);text-align:center}
+.tbox h2{font-size:40px;font-weight:700;color:var(--ink-2)}
+#t-big{font-size:280px;font-weight:700;letter-spacing:-10px;line-height:1;margin:24px 0 10px;font-variant-numeric:tabular-nums}
+#t-big.done{color:var(--accent);animation:pulse 1s ease infinite}
+@keyframes pulse{50%{opacity:.35}}
+#t-hint{font-size:28px;color:var(--ink-3);font-weight:600;min-height:34px}
+.presets{display:flex;justify-content:center;margin-top:40px}
+.preset{width:150px;height:100px;margin:0 10px;border-radius:26px;background:var(--glass-2);font-size:36px;font-weight:700}
+.tacts{display:flex;justify-content:center;margin-top:30px}
+.tact{height:96px;padding:0 54px;margin:0 12px;border-radius:999px;background:var(--ink);color:#2a1a24;font-size:34px;font-weight:800}
+.tact.ghost{background:var(--glass-2);color:var(--ink)}
+
+#night{position:absolute;top:0;left:0;right:0;bottom:0;background:#07060a;z-index:5;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity 1.5s}
+#night .nclock{font-size:260px;font-weight:600;letter-spacing:-8px;color:#b7a48a;font-variant-numeric:tabular-nums;line-height:1}
+#night .nline{font-size:36px;color:#6f6556;font-weight:600;margin-top:20px}
+#err{position:absolute;right:110px;top:56px;font-size:20px;color:var(--ink-3);font-weight:600}
+@media (prefers-reduced-motion:reduce){#stage,#sun,.f,#night{transition:none}#t-big.done{animation:none}}
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="sun"></div>
+  <div id="grain"></div>
+  <div id="err" hidden></div>
+
+  <section id="left">
+    <div id="greet"></div>
+    <div id="clock">--<span>:</span>--</div>
+    <div id="date"></div>
+    <div id="place">Sangano · 342 m</div>
+    <div id="sunline"></div>
+  </section>
+
+  <section id="now">
+    <div class="now-top">
+      <div id="now-icon"></div>
+      <div>
+        <div id="now-temp">--°</div>
+        <div id="now-desc">Carico il meteo…</div>
+      </div>
+    </div>
+    <div class="now-stats">
+      <div class="stat"><small>Oggi</small><b id="s-minmax">–</b></div>
+      <div class="stat"><small>Percepita</small><b id="s-feel">–</b></div>
+      <div class="stat"><small>Pioggia</small><b id="s-rain">–</b></div>
+      <div class="stat"><small>Vento</small><b id="s-wind">–</b></div>
+    </div>
+  </section>
+
+  <section id="hours"></section>
+  <section id="days"></section>
+
+  <footer id="foot">
+    <span id="updated"></span>
+    <button id="timer-btn" class="f"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2M9 2h6"/></svg>Timer<span id="mini-timer"></span></button>
+  </footer>
+
+  <div id="timer" hidden>
+    <div class="tbox">
+      <h2>Timer</h2>
+      <div id="t-big">05:00</div>
+      <div id="t-hint">Scegli i minuti, poi Avvia. ▲ ▼ aggiungono o tolgono un minuto.</div>
+      <div class="presets" id="presets"></div>
+      <div class="tacts">
+        <button class="tact f" id="t-start">Avvia</button>
+        <button class="tact ghost f" id="t-reset">Azzera</button>
+        <button class="tact ghost f" id="t-close">Chiudi</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="night" hidden>
+    <div class="nclock" id="nclock">--:--</div>
+    <div class="nline" id="nline"></div>
+  </div>
+</div>
+
+<script>
+(function(){
+  'use strict';
+  var LAT = 45.0271, LON = 7.4492;
+  var NIGHT_FROM = 23, NIGHT_TO = 6;
+  var $ = function(id){ return document.getElementById(id); };
+  var stage = $('stage');
+
+  function fit(){
+    var s = Math.min(window.innerWidth / 1920, window.innerHeight / 1080);
+    stage.style.transform = 'scale(' + s + ')';
+    stage.style.left = Math.max(0, (window.innerWidth - 1920 * s) / 2) + 'px';
+    stage.style.top = Math.max(0, (window.innerHeight - 1080 * s) / 2) + 'px';
+  }
+  function pad(n){ return (n < 10 ? '0' : '') + n; }
+  function cap(s){ return s.charAt(0).toUpperCase() + s.slice(1); }
+  function hm(d){ return pad(d.getHours()) + ':' + pad(d.getMinutes()); }
+
+  var ICON = {
+    sun: '<circle cx="32" cy="32" r="12" fill="#ffd27a"/><g stroke="#ffd27a" stroke-width="4" stroke-linecap="round"><path d="M32 6v7M32 51v7M6 32h7M51 32h7M13.6 13.6l5 5M45.4 45.4l5 5M13.6 50.4l5-5M45.4 18.6l5-5"/></g>',
+    moon: '<path d="M40 10a22 22 0 1 0 14 34A18 18 0 0 1 40 10z" fill="#f3e6c8"/>',
+    cloud: '<path d="M20 50h26a12 12 0 0 0 1-24 16 16 0 0 0-30 4 10 10 0 0 0 3 20z" fill="#fff" opacity=".95"/>',
+    part: '<circle cx="24" cy="24" r="11" fill="#ffd27a"/><g stroke="#ffd27a" stroke-width="3.5" stroke-linecap="round"><path d="M24 4v5M4 24h5M10 10l3.5 3.5M38 10l-3.5 3.5"/></g><path d="M24 54h24a11 11 0 0 0 1-22 14 14 0 0 0-26 4 9 9 0 0 0 1 18z" fill="#fff"/>',
+    partn: '<path d="M30 6a14 14 0 1 0 10 22 11 11 0 0 1-10-22z" fill="#f3e6c8"/><path d="M24 54h24a11 11 0 0 0 1-22 14 14 0 0 0-26 4 9 9 0 0 0 1 18z" fill="#fff"/>',
+    fog: '<path d="M20 34h26a11 11 0 0 0 1-22 14 14 0 0 0-27 4 9 9 0 0 0 0 18z" fill="#fff" opacity=".9"/><g stroke="#fff" stroke-width="4" stroke-linecap="round" opacity=".75"><path d="M12 44h40M18 53h30"/></g>',
+    rain: '<path d="M20 38h26a11 11 0 0 0 1-22 14 14 0 0 0-27 4 9 9 0 0 0 0 18z" fill="#fff"/><g stroke="#9fd3ff" stroke-width="4" stroke-linecap="round"><path d="M22 46l-3 8M33 46l-3 8M44 46l-3 8"/></g>',
+    snow: '<path d="M20 38h26a11 11 0 0 0 1-22 14 14 0 0 0-27 4 9 9 0 0 0 0 18z" fill="#fff"/><g fill="#fff"><circle cx="22" cy="49" r="3"/><circle cx="33" cy="54" r="3"/><circle cx="44" cy="49" r="3"/></g>',
+    storm: '<path d="M20 36h26a11 11 0 0 0 1-22 14 14 0 0 0-27 4 9 9 0 0 0 0 18z" fill="#e8e4ef"/><path d="M34 38l-8 12h7l-4 10 12-15h-7l4-7z" fill="#ffd27a"/>'
+  };
+  function svg(name){ return '<svg viewBox="0 0 64 64">' + (ICON[name] || ICON.cloud) + '</svg>'; }
+
+  var WMO = {
+    0:['Sereno','sun'],1:['Quasi sereno','sun'],2:['Parzialmente nuvoloso','part'],3:['Nuvoloso','cloud'],
+    45:['Nebbia','fog'],48:['Nebbia con brina','fog'],
+    51:['Pioviggine leggera','rain'],53:['Pioviggine','rain'],55:['Pioviggine intensa','rain'],56:['Pioviggine gelata','rain'],57:['Pioviggine gelata','rain'],
+    61:['Pioggia debole','rain'],63:['Pioggia','rain'],65:['Pioggia forte','rain'],66:['Pioggia gelata','rain'],67:['Pioggia gelata','rain'],
+    71:['Neve debole','snow'],73:['Neve','snow'],75:['Neve forte','snow'],77:['Nevischio','snow'],
+    80:['Rovesci deboli','rain'],81:['Rovesci','rain'],82:['Rovesci forti','rain'],85:['Rovesci di neve','snow'],86:['Rovesci di neve','snow'],
+    95:['Temporale','storm'],96:['Temporale con grandine','storm'],99:['Temporale con grandine','storm']
+  };
+  function wmo(code, isDay){
+    var w = WMO[code] || ['Variabile','cloud'];
+    var icon = w[1];
+    if (!isDay && icon === 'sun') icon = 'moon';
+    if (!isDay && icon === 'part') icon = 'partn';
+    return { text: w[0], icon: icon };
+  }
+
+  var SUN = { rise: null, set: null };
+  var SKIES = {
+    night:  ['#1d1a33','#2b2347','#140f22', .0],
+    dawn:   ['#f3b7a0','#b57fa4','#4d4a7d', .55],
+    morning:['#ffd9a8','#f2a77d','#7d84b8', .9],
+    day:    ['#8ec5e8','#6aa4d8','#5a6fb0', .7],
+    golden: ['#ffc98a','#ec8a5e','#7a5a8c', 1],
+    dusk:   ['#c06a6a','#6d4a7c','#231c3d', .35]
+  };
+  function phase(now){
+    var h = now.getHours() + now.getMinutes() / 60;
+    var r = SUN.rise ? SUN.rise.getHours() + SUN.rise.getMinutes() / 60 : 7;
+    var s = SUN.set ? SUN.set.getHours() + SUN.set.getMinutes() / 60 : 18.5;
+    if (h < r - 1 || h >= s + 1) return 'night';
+    if (h < r + .5) return 'dawn';
+    if (h < r + 3) return 'morning';
+    if (h < s - 2) return 'day';
+    if (h < s) return 'golden';
+    return 'dusk';
+  }
+  var lastPhase = null;
+  function paintSky(now){
+    var p = phase(now);
+    if (p === lastPhase) return;
+    lastPhase = p;
+    var c = SKIES[p];
+    stage.style.setProperty('--sky-a', c[0]);
+    stage.style.setProperty('--sky-b', c[1]);
+    stage.style.setProperty('--sky-c', c[2]);
+    $('sun').style.opacity = c[3];
+  }
+
+  function greeting(h){ return h < 5 ? 'Buonanotte' : h < 13 ? 'Buongiorno' : h < 18 ? 'Buon pomeriggio' : 'Buonasera'; }
+
+  var nightDismissed = 0;
+  function isNight(h){ return NIGHT_FROM > NIGHT_TO ? (h >= NIGHT_FROM || h < NIGHT_TO) : (h >= NIGHT_FROM && h < NIGHT_TO); }
+
+  function tick(){
+    var d = new Date(), h = d.getHours();
+    $('clock').innerHTML = pad(h) + '<span>:</span>' + pad(d.getMinutes());
+    $('date').textContent = cap(d.toLocaleDateString('it-IT', { weekday:'long', day:'numeric', month:'long' }));
+    $('greet').textContent = greeting(h);
+    paintSky(d);
+    var showNight = isNight(h) && Date.now() - nightDismissed > 10 * 60 * 1000 && $('timer').hidden;
+    $('night').hidden = !showNight;
+    if (showNight) {
+      $('nclock').textContent = hm(d);
+      $('nline').textContent = cap(d.toLocaleDateString('it-IT', { weekday:'long', day:'numeric', month:'long' })) + (lastTemp != null ? ' · ' + lastTemp + '°' : '');
+    }
+  }
+
+  var lastTemp = null;
+  function loadWeather(){
+    var url = 'https://api.open-meteo.com/v1/forecast?latitude=' + LAT + '&longitude=' + LON +
+      '&current=temperature_2m,apparent_temperature,is_day,weather_code,wind_speed_10m,precipitation' +
+      '&hourly=temperature_2m,weather_code,precipitation_probability,is_day' +
+      '&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,sunrise,sunset' +
+      '&timezone=Europe%2FRome&forecast_days=6&wind_speed_unit=kmh';
+    fetch(url).then(function(r){ if (!r.ok) throw new Error(r.status); return r.json(); })
+      .then(function(j){ render(j); $('err').hidden = true; })
+      .catch(function(){
+        $('err').hidden = false;
+        $('err').textContent = 'Meteo non raggiungibile, riprovo tra poco';
+        setTimeout(loadWeather, 5 * 60 * 1000);
+      });
+  }
+  window.__finestraRender = function(j){ render(j); };
+
+  function render(j){
+    var c = j.current, d = j.daily, h = j.hourly;
+    var w = wmo(c.weather_code, c.is_day);
+    lastTemp = Math.round(c.temperature_2m);
+    $('now-icon').innerHTML = svg(w.icon);
+    $('now-temp').textContent = lastTemp + '°';
+    $('now-desc').textContent = w.text;
+    $('s-minmax').textContent = Math.round(d.temperature_2m_min[0]) + '° / ' + Math.round(d.temperature_2m_max[0]) + '°';
+    $('s-feel').textContent = Math.round(c.apparent_temperature) + '°';
+    $('s-rain').textContent = (d.precipitation_probability_max[0] == null ? '–' : d.precipitation_probability_max[0] + '%');
+    $('s-wind').textContent = Math.round(c.wind_speed_10m) + ' km/h';
+
+    SUN.rise = new Date(d.sunrise[0]); SUN.set = new Date(d.sunset[0]);
+    lastPhase = null; paintSky(new Date());
+    $('sunline').innerHTML =
+      '<div class="sunbit">' + svg('sun') + '<div><small>Alba</small>' + hm(SUN.rise) + '</div></div>' +
+      '<div class="sunbit">' + svg('moon') + '<div><small>Tramonto</small>' + hm(SUN.set) + '</div></div>';
+
+    var nowMs = Date.now(), start = 0;
+    for (var i = 0; i < h.time.length; i++) { if (new Date(h.time[i]).getTime() > nowMs - 30 * 60 * 1000) { start = i; break; } }
+    var hh = '';
+    for (var k = 0; k < 8; k++) {
+      var idx = start + k * 2; if (idx >= h.time.length) break;
+      var hw = wmo(h.weather_code[idx], h.is_day[idx]);
+      var p = h.precipitation_probability[idx];
+      hh += '<div class="hour"><small>' + (k === 0 ? 'Ora' : pad(new Date(h.time[idx]).getHours()) + ':00') + '</small>' + svg(hw.icon) +
+        '<b>' + Math.round(h.temperature_2m[idx]) + '°</b><i>' + (p >= 20 ? p + '%' : '') + '</i></div>';
+    }
+    $('hours').innerHTML = hh;
+
+    var dd = '';
+    for (var n = 1; n < d.time.length && n <= 5; n++) {
+      var dw = wmo(d.weather_code[n], 1);
+      var name = n === 1 ? 'Domani' : cap(new Date(d.time[n] + 'T12:00').toLocaleDateString('it-IT', { weekday:'long' }));
+      dd += '<div class="day">' + svg(dw.icon) + '<div><small>' + name + '</small><b>' + Math.round(d.temperature_2m_max[n]) + '°<span>' + Math.round(d.temperature_2m_min[n]) + '°</span></b></div></div>';
+    }
+    $('days').innerHTML = dd;
+    var u = new Date();
+    $('updated').textContent = 'Meteo aggiornato alle ' + hm(u) + ' · Open-Meteo';
+  }
+
+  var T = { total: 300, left: 300, running: false, end: 0, timerId: null, done: false };
+  var beepCtx = null;
+  function fmt(s){ s = Math.max(0, Math.ceil(s)); var m = Math.floor(s / 60); return (m >= 60 ? Math.floor(m / 60) + ':' + pad(m % 60) : pad(m)) + ':' + pad(s % 60); }
+  function drawTimer(){
+    $('t-big').textContent = fmt(T.left);
+    $('t-big').className = T.done ? 'done' : '';
+    $('t-start').textContent = T.running ? 'Pausa' : (T.left < T.total && T.left > 0 ? 'Riprendi' : 'Avvia');
+    $('mini-timer').textContent = T.running || T.done ? fmt(T.left) : '';
+    $('t-hint').textContent = T.done ? 'Tempo scaduto! Premi OK per fermare.' : T.running ? 'In corso. Puoi chiudere: il timer continua.' : 'Scegli i minuti, poi Avvia. ▲ ▼ aggiungono o tolgono un minuto.';
+  }
+  function setMinutes(m){ T.total = T.left = m * 60; T.running = false; T.done = false; clearInterval(T.timerId); drawTimer(); }
+  function beep(){
+    try {
+      beepCtx = beepCtx || new (window.AudioContext || window.webkitAudioContext)();
+      [0, .35, .7].forEach(function(o){
+        var osc = beepCtx.createOscillator(), g = beepCtx.createGain();
+        osc.frequency.value = 880; osc.connect(g); g.connect(beepCtx.destination);
+        g.gain.setValueAtTime(.0001, beepCtx.currentTime + o);
+        g.gain.exponentialRampToValueAtTime(.4, beepCtx.currentTime + o + .02);
+        g.gain.exponentialRampToValueAtTime(.0001, beepCtx.currentTime + o + .3);
+        osc.start(beepCtx.currentTime + o); osc.stop(beepCtx.currentTime + o + .32);
+      });
+    } catch (e) {}
+  }
+  function startPause(){
+    if (T.done) { setMinutes(T.total / 60); return; }
+    if (T.running) { T.running = false; T.left = (T.end - Date.now()) / 1000; clearInterval(T.timerId); drawTimer(); return; }
+    if (T.left <= 0) T.left = T.total;
+    try { beepCtx = beepCtx || new (window.AudioContext || window.webkitAudioContext)(); if (beepCtx.resume) beepCtx.resume(); } catch (e) {}
+    T.running = true; T.end = Date.now() + T.left * 1000;
+    T.timerId = setInterval(function(){
+      T.left = (T.end - Date.now()) / 1000;
+      if (T.left <= 0) {
+        T.left = 0; T.running = false; T.done = true; clearInterval(T.timerId);
+        openTimer(); beep(); var n = 0, rep = setInterval(function(){ if (!T.done || ++n > 8) clearInterval(rep); else beep(); }, 2500);
+      }
+      drawTimer();
+    }, 250);
+    drawTimer();
+  }
+
+  var current = null;
+  function focus(el){ if (current) current.classList.remove('focus'); current = el; if (el) el.classList.add('focus'); }
+  function visibleF(){ var all = stage.querySelectorAll('.f'), out = []; for (var i = 0; i < all.length; i++) { var r = all[i].getBoundingClientRect(); if (r.width && r.height) out.push(all[i]); } return out; }
+  function openTimer(){ $('timer').hidden = false; $('night').hidden = true; focus($('t-start')); drawTimer(); }
+  function closeTimer(){ $('timer').hidden = true; focus($('timer-btn')); }
+
+  var presets = [1, 3, 5, 10, 15, 20, 30, 60];
+  presets.forEach(function(m){
+    var b = document.createElement('button');
+    b.className = 'preset f'; b.textContent = m >= 60 ? '1 h' : m + "'";
+    b.addEventListener('click', function(){ setMinutes(m); focus($('t-start')); });
+    $('presets').appendChild(b);
+  });
+  $('t-start').addEventListener('click', startPause);
+  $('t-reset').addEventListener('click', function(){ setMinutes(T.total / 60); });
+  $('t-close').addEventListener('click', closeTimer);
+  $('timer-btn').addEventListener('click', openTimer);
+  Array.prototype.forEach.call(stage.querySelectorAll('.f'), function(b){ b.addEventListener('mouseenter', function(){ focus(b); }); });
+
+  function move(dir){
+    if (!$('timer').hidden && (dir === 'up' || dir === 'down') && !T.running && !T.done) {
+      var m = Math.round(T.total / 60) + (dir === 'up' ? 1 : -1);
+      if (m >= 1 && m <= 180) setMinutes(m);
+      return;
+    }
+    var list = visibleF();
+    if (!current || list.indexOf(current) < 0) { focus(list[0]); return; }
+    var a = current.getBoundingClientRect(), best = null, bd = Infinity;
+    list.forEach(function(n){
+      if (n === current) return;
+      var b = n.getBoundingClientRect(), dx = (b.left + b.width / 2) - (a.left + a.width / 2), dy = (b.top + b.height / 2) - (a.top + a.height / 2);
+      var ok = dir === 'left' ? dx < -4 : dir === 'right' ? dx > 4 : dir === 'up' ? dy < -4 : dy > 4;
+      if (!ok) return;
+      var main = dir === 'left' || dir === 'right' ? Math.abs(dx) : Math.abs(dy);
+      var cross = dir === 'left' || dir === 'right' ? Math.abs(dy) : Math.abs(dx);
+      var dist = main + cross * 2;
+      if (dist < bd) { bd = dist; best = n; }
+    });
+    if (best) focus(best);
+  }
+
+  document.addEventListener('keydown', function(e){
+    var k = e.keyCode;
+    if (!$('night').hidden) { nightDismissed = Date.now(); $('night').hidden = true; focus($('timer-btn')); e.preventDefault(); return; }
+    if (k === 37) move('left');
+    else if (k === 39) move('right');
+    else if (k === 38) move('up');
+    else if (k === 40) move('down');
+    else if (k === 13 || k === 32) { if (T.done) { setMinutes(T.total / 60); } else if (current) current.click(); else focus($('timer-btn')); }
+    else if (k === 27 || k === 8 || k === 10009 || k === 461) { if (!$('timer').hidden) closeTimer(); else return; }
+    else return;
+    e.preventDefault();
+  });
+  $('night').addEventListener('click', function(){ nightDismissed = Date.now(); $('night').hidden = true; });
+
+  window.addEventListener('resize', fit);
+  fit();
+  tick();
+  setInterval(tick, 5000);
+  drawTimer();
+  focus($('timer-btn'));
+  loadWeather();
+  setInterval(loadWeather, 20 * 60 * 1000);
+
+  function keepAwake(){ try { if (navigator.wakeLock && document.visibilityState === 'visible') navigator.wakeLock.request('screen').catch(function(){}); } catch (e) {} }
+  keepAwake();
+  document.addEventListener('visibilitychange', keepAwake);
+})();
+</script>
+</body>
+</html>
