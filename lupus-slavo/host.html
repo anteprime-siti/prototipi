@@ -1,91 +1,23 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="it">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex, nofollow">
-<title>Anteprime · riservato</title>
-<style>
-  :root { --bg: #f4f1ec; --fg: #1d1b19; --muted: #6b655e; --line: #d8d2c9; --accent: #7b2482; --err: #b3261e; }
-  @media (prefers-color-scheme: dark) { :root { --bg: #121110; --fg: #f1ede6; --muted: #a39c92; --line: #34302c; --accent: #c77dd0; --err: #ff8a80; } }
-  * { box-sizing: border-box; }
-  body { margin: 0; min-height: 100vh; display: grid; place-items: center; padding: 16px; background: var(--bg); color: var(--fg);
-    font: 16px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
-  main { width: 100%; max-width: 360px; }
-  h1 { font-size: 28px; letter-spacing: .04em; margin: 0 0 4px; }
-  p { color: var(--muted); margin: 0 0 24px; }
-  label { display: block; font-size: 14px; margin-bottom: 6px; }
-  input { width: 100%; font: inherit; padding: 12px 14px; border: 1px solid var(--line); border-radius: 10px; background: transparent; color: inherit; }
-  input:focus-visible, button:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-  button { width: 100%; margin-top: 12px; font: inherit; font-weight: 600; padding: 12px; border: 0; border-radius: 10px; background: var(--accent); color: #fff; cursor: pointer; }
-  button:disabled { opacity: .6; cursor: progress; }
-  #err { min-height: 1.5em; color: var(--err); font-size: 14px; margin: 10px 0 0; }
-  a { color: var(--accent); font-size: 14px; }
-</style>
+<meta name="theme-color" content="#0A0F1F">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27%3E%3Crect width=%27100%27 height=%27100%27 rx=%2722%27 fill=%27%230A0F1F%27/%3E%3Ccircle cx=%2750%27 cy=%2750%27 r=%2728%27 fill=%27%23E8C26A%27/%3E%3Ccircle cx=%2762%27 cy=%2744%27 r=%2724%27 fill=%27%230A0F1F%27/%3E%3Cpath d=%27M10 86h80%27 stroke=%27%23C8102E%27 stroke-width=%276%27 stroke-dasharray=%276 6%27/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Ruslan+Display&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css?v=2">
+<title>Lupus slavo · Host</title>
 </head>
-<body>
-<main>
-  <h1>Anteprime</h1>
-  <p>Progetto riservato. Inserisci il codice di accesso per aprirlo.</p>
-  <form id="f" hidden>
-    <label for="c">Codice di accesso</label>
-    <input id="c" type="password" autocomplete="current-password" required autofocus>
-    <button id="b">Apri</button>
-    <p id="err" role="alert"></p>
-  </form>
-  <a id="r" hidden>Non hai il codice? Chiedilo qui</a>
-</main>
-<script>
-const C = {"root":"../","progetto":"../","salt":"3x2KC07+c3ha4aR1tCEjuw==","iter":600000,"titolo":"Anteprime","ritorno":"mailto:sebiburyas.sb12@gmail.com?subject=Codice%20anteprime"};
-const root = new URL(C.root, location.href), id = new URL(C.progetto, location.href).pathname, f = document.getElementById('f'), err = document.getElementById('err'), b = document.getElementById('b');
-if (C.ritorno) { const r = document.getElementById('r'); r.href = C.ritorno; r.hidden = false; }
-const db = () => new Promise((ok, ko) => { const r = indexedDB.open('cifra', 1); r.onupgradeneeded = () => r.result.createObjectStore('k'); r.onsuccess = () => ok(r.result); r.onerror = () => ko(r.error); });
-const leggi = async () => { const d = await db(); return new Promise(ok => { const g = d.transaction('k').objectStore('k').get(id); g.onsuccess = () => ok(g.result || null); g.onerror = () => ok(null); }); };
-const salva = async k => { const d = await db(); return new Promise((ok, ko) => { const t = d.transaction('k', 'readwrite'); t.objectStore('k').put(k, id); t.oncomplete = ok; t.onerror = () => ko(t.error); }); };
-const b64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
-
-async function avvia() {
-  // se il service worker c'è già ma la pagina è ancora questa, non ricaricare all'infinito
-  const ora = Date.now(), prima = +sessionStorage.getItem('cifra-avvio' + location.pathname) || 0;
-  if (ora - prima < 8000) throw new Error('loop');
-  sessionStorage.setItem('cifra-avvio' + location.pathname, ora);
-  await navigator.serviceWorker.register(new URL('sw.js', root), { scope: root.pathname, updateViaCache: 'none' });
-  if (navigator.serviceWorker.controller) return location.reload();
-  navigator.serviceWorker.addEventListener('controllerchange', () => location.reload());
-}
-
-f.onsubmit = e => { e.preventDefault(); prova(document.getElementById('c').value.trim()); };
-async function prova(codice) {
-  err.textContent = ''; b.disabled = true; b.textContent = 'Controllo…';
-  try {
-    const base = await crypto.subtle.importKey('raw', new TextEncoder().encode(codice), 'PBKDF2', false, ['deriveKey']);
-    const k = await crypto.subtle.deriveKey({ name: 'PBKDF2', salt: b64(C.salt), iterations: C.iter, hash: 'SHA-256' }, base, { name: 'AES-GCM', length: 256 }, false, ['decrypt']);
-    const m = await (await fetch(new URL('_/m', root), { cache: 'no-cache' })).arrayBuffer();
-    try { await crypto.subtle.decrypt({ name: 'AES-GCM', iv: m.slice(0, 12) }, k, m.slice(12)); }
-    catch { throw new Error('codice'); }
-    await salva(k);
-    try { localStorage.setItem('cifra-codice', codice); } catch {}
-    sessionStorage.removeItem('cifra-avvio' + location.pathname);
-    b.textContent = 'Apro…';
-    await avvia();
-  } catch (x) {
-    err.textContent = x.message === 'codice' ? 'Codice non valido.' : 'Non riesco ad aprirlo adesso. Controlla la connessione e riprova.';
-    b.disabled = false; b.textContent = 'Apri'; f.hidden = false;
-  }
-}
-
-(async () => {
-  if (!('serviceWorker' in navigator) || !window.crypto?.subtle || !window.indexedDB) {
-    err.textContent = 'Questo browser non può aprire il progetto. Prova con Chrome o Safari, fuori dalla navigazione privata.';
-    f.hidden = false; b.disabled = true; return;
-  }
-  addEventListener('hashchange', () => location.reload()); // link magico aperto su questa stessa pagina
-  // link magico: #k=<codice>, tolto subito dalla barra degli indirizzi
-  const h = new URLSearchParams(location.hash.slice(1)).get('k');
-  if (h) { history.replaceState(null, '', location.pathname + location.search); return prova(h); }
-  try { if (await leggi()) return await avvia(); } catch {}
-  f.hidden = false; document.getElementById('c').focus();
-})();
-</script>
+<body class="host">
+<div id="app"></div>
+<script src="js/compat.js"></script>
+<script src="lib/peerjs.min.js"></script>
+<script src="lib/qrcode.js"></script>
+<script src="js/common.js?v=2"></script>
+<script src="js/player.js?v=2"></script>
+<script src="js/host.js?v=2"></script>
 </body>
 </html>
