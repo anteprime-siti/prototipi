@@ -1,91 +1,551 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="it">
 <head>
-<meta charset="UTF-8">
+<meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<title>Anteprime · riservato</title>
+<title>Nome Cognome — Fascicolo opere</title>
+<meta name="description" content="Dipinti di Nome Cognome, ingegnere e pittore. Tavole, relazione, esposizioni e contatti.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
-  :root { --bg: #f4f1ec; --fg: #1d1b19; --muted: #6b655e; --line: #d8d2c9; --accent: #7b2482; --err: #b3261e; }
-  @media (prefers-color-scheme: dark) { :root { --bg: #121110; --fg: #f1ede6; --muted: #a39c92; --line: #34302c; --accent: #c77dd0; --err: #ff8a80; } }
-  * { box-sizing: border-box; }
-  body { margin: 0; min-height: 100vh; display: grid; place-items: center; padding: 16px; background: var(--bg); color: var(--fg);
-    font: 16px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
-  main { width: 100%; max-width: 360px; }
-  h1 { font-size: 28px; letter-spacing: .04em; margin: 0 0 4px; }
-  p { color: var(--muted); margin: 0 0 24px; }
-  label { display: block; font-size: 14px; margin-bottom: 6px; }
-  input { width: 100%; font: inherit; padding: 12px 14px; border: 1px solid var(--line); border-radius: 10px; background: transparent; color: inherit; }
-  input:focus-visible, button:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-  button { width: 100%; margin-top: 12px; font: inherit; font-weight: 600; padding: 12px; border: 0; border-radius: 10px; background: var(--accent); color: #fff; cursor: pointer; }
-  button:disabled { opacity: .6; cursor: progress; }
-  #err { min-height: 1.5em; color: var(--err); font-size: 14px; margin: 10px 0 0; }
-  a { color: var(--accent); font-size: 14px; }
+  :root{
+    --paper:#f2efe6;          /* carta da lucido */
+    --paper-2:#faf8f2;
+    --ink:#1e2b3a;            /* inchiostro di china blu-nero */
+    --ink-soft:#5b6673;
+    --rule:rgba(30,43,58,.16);
+    --grid-1:rgba(30,43,58,.035);
+    --grid-2:rgba(30,43,58,.07);
+    --red:#c2412d;            /* matita rossa delle correzioni */
+    --serif:"Instrument Serif", Georgia, serif;
+    --mono:"IBM Plex Mono", ui-monospace, Consolas, monospace;
+    --m:18px;                 /* margine del foglio */
+    --boxh:380px;             /* altezza massima delle opere in vista uniforme */
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth;scroll-padding-top:90px}
+  body{
+    background-color:var(--paper);color:var(--ink);font-family:var(--mono);font-weight:300;font-size:14px;line-height:1.7;
+    background-image:
+      linear-gradient(var(--grid-2) 1px,transparent 1px),linear-gradient(90deg,var(--grid-2) 1px,transparent 1px),
+      linear-gradient(var(--grid-1) 1px,transparent 1px),linear-gradient(90deg,var(--grid-1) 1px,transparent 1px);
+    background-size:50px 50px,50px 50px,10px 10px,10px 10px;
+    -webkit-font-smoothing:antialiased;
+  }
+  img{display:block;max-width:100%}
+  a{color:inherit}
+  button{font:inherit;color:inherit}
+  .wrap{width:min(1160px,100% - 80px);margin-inline:auto}
+  .lbl{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-soft)}
+
+  /* ---------- CORNICE DEL FOGLIO ---------- */
+  .sheet{position:fixed;inset:var(--m);border:1px solid var(--ink);box-shadow:0 0 0 60px var(--paper);pointer-events:none;z-index:30}
+  .sheet::after{content:"";position:absolute;inset:4px;border:1px solid var(--rule)}
+  .zones{position:fixed;z-index:31;pointer-events:none;font-size:9px;color:var(--ink-soft);display:flex;justify-content:space-around}
+  .zones.top{top:2px;left:var(--m);right:var(--m)}
+  .zones.bot{bottom:2px;left:var(--m);right:var(--m)}
+  .zones.lft,.zones.rgt{top:var(--m);bottom:var(--m);flex-direction:column;align-items:center;width:var(--m)}
+  .zones.lft{left:0}.zones.rgt{right:0}
+
+  /* ---------- INTESTAZIONE ---------- */
+  header{position:sticky;top:var(--m);z-index:20;background:var(--paper);border-bottom:1px solid var(--rule)}
+  nav{display:flex;align-items:center;justify-content:space-between;gap:16px;height:60px}
+  .brand{text-decoration:none;font-size:11px;letter-spacing:.14em;text-transform:uppercase}
+  .brand b{font-weight:500}
+  nav ul{display:flex;gap:26px;list-style:none}
+  nav ul a{text-decoration:none;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-soft);transition:color .2s}
+  nav ul a:hover{color:var(--red)}
+  nav ul a span{color:var(--red);margin-right:4px}
+
+  /* ---------- QUOTE (linee di misura) ---------- */
+  .q{position:relative;margin:30px 34px 14px 0}
+  .q .art{position:relative;overflow:hidden;background:var(--paper-2)}
+  .q .art img{width:100%;height:100%;object-fit:cover;aspect-ratio:var(--ar)}
+  .qh,.qv{position:absolute;color:var(--ink);font-size:10px;letter-spacing:.06em}
+  .qh{left:0;right:0;top:-18px;height:1px;background:currentColor}
+  .qv{top:0;bottom:0;right:-20px;width:1px;background:currentColor}
+  .qh::before,.qh::after,.qv::before,.qv::after{content:"";position:absolute;background:currentColor}
+  .qh::before,.qh::after{top:-5px;width:1px;height:11px;transform:rotate(45deg)}
+  .qh::before{left:0}.qh::after{right:0}
+  .qv::before,.qv::after{left:-5px;height:1px;width:11px;transform:rotate(45deg)}
+  .qv::before{top:0}.qv::after{bottom:0}
+  .qh span,.qv span{position:absolute;background:var(--paper);padding:0 6px;white-space:nowrap}
+  .qh span{left:50%;top:-8px;transform:translateX(-50%)}
+  .qv span{top:50%;left:-1px;transform:translate(-50%,-50%) rotate(-90deg)}
+  /* linee di richiamo */
+  .q .ext{position:absolute;inset:-22px -24px 0 0;pointer-events:none;
+    background:
+      linear-gradient(var(--rule),var(--rule)) left top/1px 22px no-repeat,
+      linear-gradient(var(--rule),var(--rule)) calc(100% - 24px) top/1px 22px no-repeat,
+      linear-gradient(90deg,var(--rule),var(--rule)) right 22px/24px 1px no-repeat,
+      linear-gradient(90deg,var(--rule),var(--rule)) right bottom/24px 1px no-repeat}
+  /* costruzione: rettangolo e diagonali che si disegnano */
+  .build{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible}
+  .build *{fill:none;stroke:var(--red);stroke-width:1;vector-effect:non-scaling-stroke;stroke-dasharray:1;stroke-dashoffset:1}
+  .q .art img{opacity:0}
+  .q.drawn .art img{opacity:1;transition:opacity .9s .55s}
+  .q.drawn .build *{animation:draw .8s ease forwards}
+  .q.drawn .build .d{animation:draw .8s .15s ease forwards,fade .6s 1.4s forwards}
+  @keyframes draw{to{stroke-dashoffset:0}}
+  @keyframes fade{to{opacity:0}}
+  /* crocini di registro */
+  .reg{position:absolute;width:14px;height:14px;pointer-events:none}
+  .reg::before,.reg::after{content:"";position:absolute;background:var(--ink)}
+  .reg::before{left:6px;top:0;width:1px;height:14px}.reg::after{top:6px;left:0;height:1px;width:14px}
+
+  /* ---------- APERTURA ---------- */
+  .hero{display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:end;padding:64px 0 56px}
+  .doc{display:flex;gap:20px;flex-wrap:wrap}
+  .hero h1{font-family:var(--serif);font-weight:400;font-size:clamp(3.2rem,8vw,6.6rem);line-height:.92;margin:26px 0 20px;letter-spacing:-.01em}
+  .hero h1 i{color:var(--red)}
+  .hero .lead{font-size:13px;max-width:44ch;color:var(--ink-soft)}
+  .hero-art{position:relative;max-width:460px;justify-self:end;width:100%;cursor:zoom-in}
+  .hero-art .reg.a{left:-26px;top:-36px}.hero-art .reg.b{right:-30px;bottom:-8px}
+  .hero-cap{font-size:10px;letter-spacing:.08em;color:var(--ink-soft);margin-top:4px}
+  .hero-cap em{font-family:var(--serif);font-style:italic;font-size:15px;letter-spacing:0;color:var(--ink)}
+
+  /* cartiglio */
+  .cart{display:grid;border:1px solid var(--ink);background:var(--paper-2)}
+  .cart>div{padding:8px 12px;border-right:1px solid var(--ink);border-bottom:1px solid var(--ink);min-width:0}
+  .cart .lbl{display:block;font-size:9px;line-height:1.3}
+  .cart .v{font-size:12px;font-weight:400;overflow-wrap:anywhere}
+  .cart .v.t{font-family:var(--serif);font-size:19px;font-style:italic;font-weight:400;line-height:1.2}
+  .cart-hero{grid-template-columns:repeat(4,1fr);margin-bottom:8px}
+  .cart-hero>div:nth-child(4n){border-right:0}
+  .cart-hero>div{border-bottom:0}
+
+  /* ---------- SEZIONI ---------- */
+  section{padding:88px 0;border-top:1px solid var(--ink)}
+  .sh{display:flex;align-items:baseline;gap:18px;margin-bottom:40px;flex-wrap:wrap}
+  .sh .n{font-size:11px;color:var(--red);letter-spacing:.1em}
+  .sh h2{font-family:var(--serif);font-weight:400;font-size:clamp(2.4rem,5vw,3.6rem);line-height:1}
+  .sh .lbl{margin-left:auto}
+
+  /* registro tavole */
+  table{width:100%;border-collapse:collapse;font-size:12px}
+  th{text-align:left;font-weight:400;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-soft);padding:0 10px 10px;border-bottom:1px solid var(--ink)}
+  td{padding:11px 10px;border-bottom:1px solid var(--rule);vertical-align:baseline}
+  tbody tr{cursor:pointer;transition:background .15s}
+  tbody tr:hover{background:var(--paper-2)}
+  tbody tr:hover td:first-child{color:var(--red)}
+  td.t{font-family:var(--serif);font-style:italic;font-size:17px}
+  td.r{text-align:right}
+  .st{display:inline-flex;align-items:center;gap:6px;font-size:10px;letter-spacing:.08em;text-transform:uppercase}
+  .st::before{content:"";width:7px;height:7px;border:1px solid currentColor;border-radius:50%}
+  .st.sold{color:var(--red)}.st.sold::before{background:currentColor}
+
+  /* tavole */
+  .bar{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:28px;padding-bottom:16px;border-bottom:1px dashed var(--rule)}
+  .seg{display:flex;flex-wrap:wrap;border:1px solid var(--ink)}
+  .seg button{background:none;border:0;border-right:1px solid var(--ink);padding:7px 13px;font-size:10px;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;transition:background .2s,color .2s}
+  .seg button:last-child{border-right:0}
+  .seg button:hover{color:var(--red)}
+  .seg button.on{background:var(--ink);color:var(--paper)}
+  .scale-note{font-size:10px;color:var(--ink-soft);margin:-12px 0 24px;min-height:1em}
+  .tavole{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:64px 56px;align-items:end}
+  .tav{cursor:zoom-in;opacity:0;transform:translateY(14px);transition:opacity .6s,transform .6s}
+  .tav.in{opacity:1;transform:none}
+  .tav .stage{display:flex;justify-content:center}
+  .tav .q{width:var(--w);transition:width .7s cubic-bezier(.6,0,.2,1)}
+  .tav .art{transition:box-shadow .3s}
+  .tav:hover .art{box-shadow:0 0 0 1px var(--red)}
+  .tav-head{display:flex;justify-content:space-between;font-size:10px;letter-spacing:.12em;text-transform:uppercase;padding:6px 0;border-top:1px solid var(--ink);margin-top:10px}
+  .tav-head b{font-weight:500;color:var(--red)}
+  .cart-mini{grid-template-columns:1fr 1fr}
+  .cart-mini>div:nth-child(3){border-right:0}
+  .cart-mini>div:nth-last-child(-n+2){border-bottom:0}
+  .cart-mini>div.full{grid-column:1/-1;border-right:0}
+
+  /* relazione */
+  .rel{display:grid;grid-template-columns:.75fr 1.25fr;gap:72px;align-items:start}
+  .portrait{position:relative;aspect-ratio:4/5;background:var(--paper-2);border:1px solid var(--ink);display:grid;place-items:center;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-soft);overflow:visible}
+  .portrait img{width:100%;height:100%;object-fit:cover;filter:grayscale(1) contrast(1.05)}
+  .portrait .reg.a{left:-8px;top:-8px}.portrait .reg.b{right:-8px;bottom:-8px}
+  .portrait-cap{margin-top:12px;font-size:10px;color:var(--ink-soft)}
+  ol.paras{list-style:none;counter-reset:p}
+  ol.paras>li{counter-increment:p;display:grid;grid-template-columns:52px 1fr;gap:8px;padding:18px 0;border-bottom:1px solid var(--rule)}
+  ol.paras>li::before{content:counter(p,decimal-leading-zero)".";font-size:11px;color:var(--red);padding-top:4px}
+  ol.paras h3{font-family:var(--serif);font-weight:400;font-size:22px;line-height:1.2;margin-bottom:6px}
+  ol.paras p{font-size:13px;color:#33404e;max-width:62ch}
+  .mat{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:0;border:1px solid var(--ink);margin-top:10px}
+  .mat div{padding:8px 10px;border-right:1px solid var(--rule);border-bottom:1px solid var(--rule);font-size:12px}
+  blockquote{margin-top:36px;font-family:var(--serif);font-style:italic;font-size:clamp(1.5rem,2.6vw,2rem);line-height:1.3;position:relative;padding-left:28px}
+  blockquote::before{content:"";position:absolute;left:0;top:.3em;bottom:.2em;width:1px;background:var(--red)}
+
+  /* contatti */
+  .contact{display:grid;grid-template-columns:1fr 1fr;gap:56px;align-items:end}
+  .contact p{font-size:13px;color:var(--ink-soft);max-width:46ch;margin-top:16px}
+  .mail{display:block;font-family:var(--serif);font-size:clamp(1.8rem,4.4vw,3.2rem);text-decoration:none;line-height:1.1;overflow-wrap:anywhere;border-bottom:1px solid var(--ink);padding-bottom:10px;transition:color .2s}
+  .mail:hover{color:var(--red)}
+
+  footer{border-top:1px solid var(--ink);margin-bottom:var(--m)}
+  .cart-foot{grid-template-columns:2fr 1fr 1fr 1fr;border:0;border-left:1px solid var(--ink);border-right:1px solid var(--ink);background:transparent}
+  .cart-foot>div{border-bottom:0}
+  .cart-foot>div:last-child{border-right:0}
+  .cart-foot a{text-decoration:none}
+
+  /* ---------- FOGLIO A SCHERMO INTERO ---------- */
+  .lb{position:fixed;inset:0;z-index:60;display:none;background-color:var(--paper);background-image:inherit;background-size:inherit}
+  .lb.open{display:grid;grid-template-columns:1fr 320px}
+  .lb-stage{display:flex;align-items:center;justify-content:center;padding:70px 70px 40px;min-height:0;overflow:hidden}
+  .lb-stage .q{width:min(var(--lw),100%)}
+  .lb-side{border-left:1px solid var(--ink);display:flex;flex-direction:column;justify-content:flex-end;padding:24px;gap:14px;background:var(--paper)}
+  .lb-side .cart{grid-template-columns:1fr 1fr}
+  .lb-side .cart>div:nth-child(odd){border-right:0}
+  .lb-side .cart>div.full{grid-column:1/-1;border-right:0}
+  .lb-side .cart>div:last-child{border-bottom:0}
+  .lb-note{font-size:12px;color:#33404e}
+  .lb-nav{display:flex;border:1px solid var(--ink)}
+  .lb-nav button{flex:1;background:none;border:0;border-right:1px solid var(--ink);padding:10px;font-size:10px;letter-spacing:.14em;text-transform:uppercase;cursor:pointer}
+  .lb-nav button:last-child{border-right:0}
+  .lb-nav button:hover{background:var(--ink);color:var(--paper)}
+  .lb-close{position:absolute;top:18px;left:22px;background:none;border:0;font-size:10px;letter-spacing:.14em;text-transform:uppercase;cursor:pointer;padding:6px 0;border-bottom:1px solid var(--ink)}
+  .lb-close:hover{color:var(--red);border-color:var(--red)}
+  .lb-count{position:absolute;top:22px;right:344px;font-size:10px;letter-spacing:.14em;color:var(--ink-soft)}
+
+  @media (max-width:900px){
+    :root{--m:8px;--boxh:320px}
+    .wrap{width:min(1160px,100% - 40px)}
+    .zones{display:none}
+    nav ul{gap:16px}
+    nav ul li.x{display:none}
+    .hero,.rel,.contact{grid-template-columns:1fr;gap:48px}
+    .hero{padding:40px 0 48px}
+    .hero-art{justify-self:start}
+    .hero-art .reg.a{left:-12px}.hero-art .reg.b{right:0;bottom:-20px}
+    .cart-hero{grid-template-columns:1fr 1fr}
+    .cart-hero>div:nth-child(2n){border-right:0}
+    .cart-hero>div:nth-child(-n+2){border-bottom:1px solid var(--ink)}
+    section{padding:64px 0}
+    .hide-s{display:none}
+    .lb.open{grid-template-columns:1fr;grid-template-rows:1fr auto}
+    .lb-stage{padding:64px 40px 16px}
+    .lb-side{border-left:0;border-top:1px solid var(--ink);padding:14px 16px}
+    .lb-count{right:20px}
+    .cart-foot{grid-template-columns:1fr 1fr}
+    .cart-foot>div:nth-child(2n){border-right:0}
+    .cart-foot>div:nth-child(-n+2){border-bottom:1px solid var(--ink)}
+  }
+  @media (max-width:520px){
+    nav ul li.y{display:none}
+    .brand span{display:none}
+    .tavole{grid-template-columns:1fr}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *{transition:none!important;animation:none!important;scroll-behavior:auto!important}
+    .q .art img{opacity:1}.build{display:none}.tav{opacity:1;transform:none}
+  }
+  a[href="#top"]{display:inline-block;padding:10px 0;margin:-10px 0}
+  /* Leggibilità e tocco: etichette tecniche almeno a 11px, comandi alti almeno 40px sui touch */
+  .lbl,.hero-cap,.cart .lbl,th,.st,.seg button,.scale-note,.tav-head,.portrait,.portrait-cap,.lb-nav button,.lb-close,.lb-count{font-size:11px}
+  .sh .n{font-size:12px}
+  @media (pointer:coarse){
+    nav.wrap a{display:inline-flex;align-items:center;min-height:40px}
+    .seg button{min-height:40px}
+    .lb-nav button,.lb-close{min-height:44px}
+  }
 </style>
 </head>
 <body>
+
+<div class="sheet" aria-hidden="true"></div>
+<div class="zones top" aria-hidden="true"><span>A</span><span>B</span><span>C</span><span>D</span><span>E</span><span>F</span><span>G</span><span>H</span></div>
+<div class="zones bot" aria-hidden="true"><span>A</span><span>B</span><span>C</span><span>D</span><span>E</span><span>F</span><span>G</span><span>H</span></div>
+<div class="zones lft" aria-hidden="true"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span></div>
+<div class="zones rgt" aria-hidden="true"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span></div>
+
+<header id="top">
+  <nav class="wrap">
+    <a class="brand" href="#top"><b data-f="nome">Nome Cognome</b><span> — Fascicolo opere</span></a>
+    <ul>
+      <li><a href="#tavole"><span>01</span>Tavole</a></li>
+      <li class="x"><a href="#elenco"><span>02</span>Elenco</a></li>
+      <li class="y"><a href="#relazione"><span>03</span>Relazione</a></li>
+      <li class="x"><a href="#esposizioni"><span>04</span>Esposizioni</a></li>
+      <li><a href="#contatti"><span>05</span>Contatti</a></li>
+    </ul>
+  </nav>
+</header>
+
 <main>
-  <h1>Anteprime</h1>
-  <p>Progetto riservato. Inserisci il codice di accesso per aprirlo.</p>
-  <form id="f" hidden>
-    <label for="c">Codice di accesso</label>
-    <input id="c" type="password" autocomplete="current-password" required autofocus>
-    <button id="b">Apri</button>
-    <p id="err" role="alert"></p>
-  </form>
-  <a id="r" hidden>Non hai il codice? Chiedilo qui</a>
+  <!-- APERTURA -->
+  <div class="wrap hero">
+    <div>
+      <div class="doc lbl"><span>Doc. n° 001</span><span>Rev. <span id="rev"></span></span><span>Disciplina: pittura</span></div>
+      <h1><span data-f="nome">Nome Cognome</span><br><i>dal calcolo al colore</i></h1>
+      <p class="lead">Una vita a progettare strutture, misurando tutto al millimetro. Poi la tela, dove le misure restano ma il resto è libero. Qui sono raccolti i dipinti, catalogati come tavole di progetto.</p>
+    </div>
+    <div>
+      <div class="hero-art" id="hero"></div>
+    </div>
+  </div>
+  <div class="wrap">
+    <div class="cart cart-hero">
+      <div><span class="lbl">Progettista</span><span class="v" data-f="nome">Nome Cognome</span></div>
+      <div><span class="lbl">Formazione</span><span class="v">Ingegneria</span></div>
+      <div><span class="lbl">Scala</span><span class="v">1:1 sulla tela</span></div>
+      <div><span class="lbl">Tavole</span><span class="v" id="ntav"></span></div>
+    </div>
+  </div>
+
+  <!-- TAVOLE -->
+  <section id="tavole" style="margin-top:56px">
+    <div class="wrap">
+      <div class="sh"><span class="n">01 —</span><h2>Tavole</h2><span class="lbl">Clic su un'opera per aprire il foglio</span></div>
+      <div class="bar">
+        <div class="seg" id="filters" role="group" aria-label="Filtra per serie"></div>
+        <div class="seg" role="group" aria-label="Vista">
+          <button class="on" data-v="uni">Vista uniforme</button>
+          <button data-v="scala">In scala reale</button>
+        </div>
+      </div>
+      <p class="scale-note" id="scaleNote"></p>
+      <div class="tavole" id="tavoleEl"></div>
+    </div>
+  </section>
+
+  <!-- ELENCO -->
+  <section id="elenco">
+    <div class="wrap">
+      <div class="sh"><span class="n">02 —</span><h2>Elenco tavole</h2></div>
+      <table>
+        <thead><tr><th>Tav.</th><th>Titolo</th><th class="hide-s">Tecnica</th><th>Misure</th><th class="hide-s">Anno</th><th class="r">Stato</th></tr></thead>
+        <tbody id="registro"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- RELAZIONE -->
+  <section id="relazione">
+    <div class="wrap rel">
+      <div>
+        <div class="portrait"><span class="reg a"></span><span class="reg b"></span>Ritratto dell'artista<!-- <img src="img/ritratto.jpg" alt="Ritratto di Nome Cognome"> --></div>
+        <p class="portrait-cap">Fig. 1 — L'autore nello studio, [anno].</p>
+      </div>
+      <div>
+        <div class="sh" style="margin-bottom:16px"><span class="n">03 —</span><h2>Relazione</h2></div>
+        <p class="lbl" style="margin-bottom:12px">Relazione tecnico-illustrativa sull'autore</p>
+        <ol class="paras">
+          <li><div><h3>Premessa</h3><p>[Dove e quando è nato, in due righe.]</p></div></li>
+          <li><div><h3>Formazione e carriera</h3><p>[Laurea in ingegneria, settore, anni di lavoro, un progetto di cui va fiero.]</p></div></li>
+          <li><div><h3>La svolta</h3><p>[Quando e perché ha iniziato a dipingere. Il passaggio dalla pensione alla tela.]</p></div></li>
+          <li><div><h3>Metodo</h3><p>[Come lavora: parte da uno schizzo? Usa misure, griglie, geometrie? Cosa resta dell'ingegnere nei quadri.]</p></div></li>
+          <li><div><h3>Materiali impiegati</h3>
+            <div class="mat"><div>Olio</div><div>Acrilico</div><div>Tela di lino</div><div>Tavola</div><div>Spatola</div><div>[altro]</div></div></div></li>
+        </ol>
+        <blockquote>«Una frase dell'artista sul suo modo di dipingere.»</blockquote>
+      </div>
+    </div>
+  </section>
+
+  <!-- ESPOSIZIONI -->
+  <section id="esposizioni">
+    <div class="wrap">
+      <div class="sh"><span class="n">04 —</span><h2>Esposizioni</h2></div>
+      <table>
+        <thead><tr><th>Anno</th><th>Titolo</th><th class="hide-s">Luogo</th><th class="r">Tipo</th></tr></thead>
+        <tbody class="static">
+          <tr><td>20XX</td><td class="t">Titolo della mostra</td><td class="hide-s">Luogo, città</td><td class="r">Personale</td></tr>
+          <tr><td>20XX</td><td class="t">Titolo della mostra</td><td class="hide-s">Luogo, città</td><td class="r">Collettiva</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- CONTATTI -->
+  <section id="contatti">
+    <div class="wrap contact">
+      <div>
+        <div class="sh" style="margin-bottom:0"><span class="n">05 —</span><h2>Contatti</h2></div>
+        <p>Per informazioni su un'opera, acquisti o visite allo studio, indicare nel messaggio il numero della tavola.</p>
+      </div>
+      <div>
+        <span class="lbl">Posta elettronica</span>
+        <a class="mail" href="mailto:email@esempio.it">email@esempio.it</a>
+      </div>
+    </div>
+  </section>
 </main>
+
+<footer>
+  <div class="wrap">
+    <div class="cart cart-foot">
+      <div><span class="lbl">Titolo</span><span class="v"><span data-f="nome">Nome Cognome</span> — Fascicolo opere</span></div>
+      <div><span class="lbl">Data</span><span class="v" id="yr"></span></div>
+      <div><span class="lbl">Diritti</span><span class="v">Riservati all'autore</span></div>
+      <div><span class="lbl">Foglio</span><span class="v"><a href="#top">Torna su ↑</a></span></div>
+    </div>
+  </div>
+</footer>
+
+<!-- FOGLIO A SCHERMO INTERO -->
+<div class="lb" id="lb" role="dialog" aria-modal="true" aria-label="Tavola ingrandita">
+  <button class="lb-close" id="lbClose">← Chiudi foglio</button>
+  <span class="lb-count" id="lbCount"></span>
+  <div class="lb-stage" id="lbStage"></div>
+  <aside class="lb-side">
+    <p class="lb-note" id="lbNote"></p>
+    <div class="cart" id="lbCart"></div>
+    <div class="lb-nav"><button id="lbPrev">← Prec.</button><button id="lbNext">Succ. →</button></div>
+  </aside>
+</div>
+
 <script>
-const C = {"root":"../","progetto":"../","salt":"3x2KC07+c3ha4aR1tCEjuw==","iter":600000,"titolo":"Anteprime","ritorno":"mailto:sebiburyas.sb12@gmail.com?subject=Codice%20anteprime"};
-const root = new URL(C.root, location.href), id = new URL(C.progetto, location.href).pathname, f = document.getElementById('f'), err = document.getElementById('err'), b = document.getElementById('b');
-if (C.ritorno) { const r = document.getElementById('r'); r.href = C.ritorno; r.hidden = false; }
-const db = () => new Promise((ok, ko) => { const r = indexedDB.open('cifra', 1); r.onupgradeneeded = () => r.result.createObjectStore('k'); r.onsuccess = () => ok(r.result); r.onerror = () => ko(r.error); });
-const leggi = async () => { const d = await db(); return new Promise(ok => { const g = d.transaction('k').objectStore('k').get(id); g.onsuccess = () => ok(g.result || null); g.onerror = () => ok(null); }); };
-const salva = async k => { const d = await db(); return new Promise((ok, ko) => { const t = d.transaction('k', 'readwrite'); t.objectStore('k').put(k, id); t.oncomplete = ok; t.onerror = () => ko(t.error); }); };
-const b64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+/* =====================================================================
+   DATI DA COMPILARE
+   - NOME: nome dell'artista (aggiorna anche <title> e meta description)
+   - OPERE: una riga per quadro, nell'ordine in cui devono apparire.
+     misure: "BASE × ALTEZZA cm" (prima la larghezza, poi l'altezza).
+             Servono per le quote e per la vista "in scala reale".
+     img:    percorso della foto in img/ (es. "img/tramonto-2024.jpg").
+             Le foto vanno ritagliate esattamente sul bordo della tela.
+             Se vuoto compare un segnaposto.
+     serie:  alimenta i filtri.  venduto:true → "collezione privata".
+     inEvidenza:true → l'opera in apertura.
+   ===================================================================== */
+const NOME = "Nome Cognome";
 
-async function avvia() {
-  // se il service worker c'è già ma la pagina è ancora questa, non ricaricare all'infinito
-  const ora = Date.now(), prima = +sessionStorage.getItem('cifra-avvio' + location.pathname) || 0;
-  if (ora - prima < 8000) throw new Error('loop');
-  sessionStorage.setItem('cifra-avvio' + location.pathname, ora);
-  await navigator.serviceWorker.register(new URL('sw.js', root), { scope: root.pathname, updateViaCache: 'none' });
-  if (navigator.serviceWorker.controller) return location.reload();
-  navigator.serviceWorker.addEventListener('controllerchange', () => location.reload());
+const OPERE = [
+  { titolo:"Titolo opera 1", anno:2024, tecnica:"Olio su tela",      misure:"70 × 100 cm", serie:"Paesaggi", img:"", note:"", inEvidenza:true },
+  { titolo:"Titolo opera 2", anno:2024, tecnica:"Acrilico su tela",  misure:"50 × 50 cm",  serie:"Astratti", img:"", note:"" },
+  { titolo:"Titolo opera 3", anno:2023, tecnica:"Olio su tavola",    misure:"60 × 40 cm",  serie:"Paesaggi", img:"", note:"", venduto:true },
+  { titolo:"Titolo opera 4", anno:2023, tecnica:"Tecnica mista",     misure:"80 × 60 cm",  serie:"Astratti", img:"", note:"" },
+  { titolo:"Titolo opera 5", anno:2022, tecnica:"Olio su tela",      misure:"60 × 80 cm",  serie:"Ritratti", img:"", note:"" },
+  { titolo:"Titolo opera 6", anno:2022, tecnica:"Acrilico su carta", misure:"30 × 40 cm",  serie:"Astratti", img:"", note:"" },
+  { titolo:"Titolo opera 7", anno:2021, tecnica:"Olio su tela",      misure:"100 × 70 cm", serie:"Paesaggi", img:"", note:"" },
+  { titolo:"Titolo opera 8", anno:2021, tecnica:"Olio su tela",      misure:"50 × 70 cm",  serie:"Ritratti", img:"", note:"" },
+];
+
+/* ------------------ da qui in giù non serve toccare ------------------ */
+
+const dims=o=>{const m=(o.misure||"").match(/(\d+(?:[.,]\d+)?)\s*[×x]\s*(\d+(?:[.,]\d+)?)/);return m?[+m[1].replace(",","."),+m[2].replace(",",".")]:[50,70]};
+const num=i=>String(i+1).padStart(2,"0");
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+function placeholder(o,i){
+  const [w,h]=dims(o), W=600, H=Math.round(W*h/w);
+  const pal=[["#c9b79c","#c2412d","#1e2b3a","#e8dfcc"],["#7d8a6a","#d9c7a3","#2f3a33","#b86b4b"],["#3d4f63","#c2a878","#ece4d5","#8c3f2a"],["#b9a48a","#5e6b73","#e3d6bf","#2d2a26"]][i%4];
+  let r=(i+1)*9301; const rnd=()=>((r=(r*49297+233280)%233280)/233280);
+  let s=`<rect width="${W}" height="${H}" fill="${pal[3]}"/>`;
+  for(let k=0;k<5;k++){const c=pal[k%3];
+    s+= k%2 ? `<circle cx="${rnd()*W}" cy="${rnd()*H}" r="${60+rnd()*W/2.5}" fill="${c}" opacity=".7"/>`
+            : `<rect x="${rnd()*W*.6}" y="${rnd()*H*.7}" width="${120+rnd()*W/2}" height="${80+rnd()*H/2.5}" fill="${c}" opacity=".65" transform="rotate(${rnd()*20-10} ${W/2} ${H/2})"/>`;}
+  return "data:image/svg+xml,"+encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}">${s}</svg>`);
 }
+const src=(o,i)=>o.img||placeholder(o,i);
 
-f.onsubmit = e => { e.preventDefault(); prova(document.getElementById('c').value.trim()); };
-async function prova(codice) {
-  err.textContent = ''; b.disabled = true; b.textContent = 'Controllo…';
-  try {
-    const base = await crypto.subtle.importKey('raw', new TextEncoder().encode(codice), 'PBKDF2', false, ['deriveKey']);
-    const k = await crypto.subtle.deriveKey({ name: 'PBKDF2', salt: b64(C.salt), iterations: C.iter, hash: 'SHA-256' }, base, { name: 'AES-GCM', length: 256 }, false, ['decrypt']);
-    const m = await (await fetch(new URL('_/m', root), { cache: 'no-cache' })).arrayBuffer();
-    try { await crypto.subtle.decrypt({ name: 'AES-GCM', iv: m.slice(0, 12) }, k, m.slice(12)); }
-    catch { throw new Error('codice'); }
-    await salva(k);
-    try { localStorage.setItem('cifra-codice', codice); } catch {}
-    sessionStorage.removeItem('cifra-avvio' + location.pathname);
-    b.textContent = 'Apro…';
-    await avvia();
-  } catch (x) {
-    err.textContent = x.message === 'codice' ? 'Codice non valido.' : 'Non riesco ad aprirlo adesso. Controlla la connessione e riprova.';
-    b.disabled = false; b.textContent = 'Apri'; f.hidden = false;
-  }
+// Disegno quotato di un'opera
+function quoted(o,i){
+  const [w,h]=dims(o);
+  return `<div class="q" style="--ar:${w}/${h}">
+    <span class="ext"></span>
+    <span class="qh"><span>${w}</span></span>
+    <span class="qv"><span>${h}</span></span>
+    <div class="art"><img src="${src(o,i)}" alt="${esc(o.titolo)}${o.tecnica?", "+esc(o.tecnica):""}" loading="lazy">
+      <svg class="build" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+        <rect x="0" y="0" width="100" height="100" pathLength="1"/>
+        <line class="d" x1="0" y1="0" x2="100" y2="100" pathLength="1"/>
+        <line class="d" x1="100" y1="0" x2="0" y2="100" pathLength="1"/>
+      </svg></div></div>`;
 }
+const draw=el=>{el.classList.remove("drawn");void el.offsetWidth;el.classList.add("drawn")};
+const stato=o=>o.venduto?'<span class="st sold">Coll. privata</span>':'<span class="st">Disponibile</span>';
 
-(async () => {
-  if (!('serviceWorker' in navigator) || !window.crypto?.subtle || !window.indexedDB) {
-    err.textContent = 'Questo browser non può aprire il progetto. Prova con Chrome o Safari, fuori dalla navigazione privata.';
-    f.hidden = false; b.disabled = true; return;
-  }
-  addEventListener('hashchange', () => location.reload()); // link magico aperto su questa stessa pagina
-  // link magico: #k=<codice>, tolto subito dalla barra degli indirizzi
-  const h = new URLSearchParams(location.hash.slice(1)).get('k');
-  if (h) { history.replaceState(null, '', location.pathname + location.search); return prova(h); }
-  try { if (await leggi()) return await avvia(); } catch {}
-  f.hidden = false; document.getElementById('c').focus();
-})();
+// Testi generali
+document.querySelectorAll('[data-f="nome"]').forEach(e=>e.textContent=NOME);
+const Y=new Date().getFullYear();
+document.getElementById("yr").textContent=Y;
+document.getElementById("rev").textContent=Y;
+document.getElementById("ntav").textContent=String(OPERE.length).padStart(2,"0");
+
+// Apertura
+const hi=Math.max(0,OPERE.findIndex(o=>o.inEvidenza)), ho=OPERE[hi];
+const heroEl=document.getElementById("hero");
+heroEl.innerHTML=`<span class="reg a"></span><span class="reg b"></span>${quoted(ho,hi)}
+  <div class="hero-cap">Tav. ${num(hi)} — <em>${esc(ho.titolo)}</em>, ${esc(ho.tecnica)}, ${ho.anno}</div>`;
+heroEl.querySelector("img").loading="eager";
+requestAnimationFrame(()=>draw(heroEl.querySelector(".q")));
+heroEl.onclick=()=>openLb(hi);
+
+// Tavole
+const maxW=Math.max(...OPERE.map(o=>dims(o)[0]));
+let vista="uni", serieSel="Tutte", view=[];
+const tavEl=document.getElementById("tavoleEl"), fEl=document.getElementById("filters");
+const serie=["Tutte",...new Set(OPERE.map(o=>o.serie).filter(Boolean))];
+if(serie.length>2){
+  fEl.innerHTML=serie.map((s,i)=>`<button class="${i?"":"on"}" data-s="${esc(s)}">${esc(s)}</button>`).join("");
+  fEl.onclick=e=>{const b=e.target.closest("button");if(!b)return;
+    fEl.querySelectorAll("button").forEach(x=>x.classList.toggle("on",x===b));serieSel=b.dataset.s;renderTav()};
+} else fEl.style.display="none";
+document.querySelector('[aria-label="Vista"]').onclick=e=>{const b=e.target.closest("button");if(!b)return;
+  b.parentNode.querySelectorAll("button").forEach(x=>x.classList.toggle("on",x===b));vista=b.dataset.v;sizeTav()};
+
+function widthFor(o){
+  const [w,h]=dims(o);
+  return vista==="scala" ? `calc(${(w/maxW*100).toFixed(2)}% - 34px)` : `min(calc(100% - 34px), calc(var(--boxh) * ${w} / ${h}))`;
+}
+function sizeTav(){
+  tavEl.querySelectorAll(".tav").forEach(t=>t.querySelector(".q").style.width=widthFor(OPERE[+t.dataset.i]));
+  document.getElementById("scaleNote").textContent = vista==="scala" ? `Le opere sono mostrate in proporzione tra loro: la più larga misura ${maxW} cm.` : "";
+}
+const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add("in");draw(e.target.querySelector(".q"));io.unobserve(e.target)}}),{rootMargin:"0px 0px -60px"});
+function renderTav(){
+  view=OPERE.map((_,i)=>i).filter(i=>serieSel==="Tutte"||OPERE[i].serie===serieSel);
+  tavEl.innerHTML=view.map(i=>{const o=OPERE[i];return `<article class="tav" data-i="${i}" tabindex="0" aria-label="Tavola ${num(i)}: ${esc(o.titolo)}">
+    <div class="stage">${quoted(o,i)}</div>
+    <div class="tav-head"><b>Tav. ${num(i)}</b><span>${esc(o.serie||"")}</span></div>
+    <div class="cart cart-mini">
+      <div class="full"><span class="lbl">Titolo</span><span class="v t">${esc(o.titolo)}</span></div>
+      <div><span class="lbl">Tecnica</span><span class="v">${esc(o.tecnica)}</span></div>
+      <div><span class="lbl">Anno</span><span class="v">${o.anno||"—"}</span></div>
+    </div></article>`}).join("");
+  tavEl.querySelectorAll(".tav").forEach(t=>{io.observe(t);
+    t.onclick=()=>openLb(+t.dataset.i);
+    t.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();openLb(+t.dataset.i)}}});
+  sizeTav();
+}
+renderTav();
+
+// Elenco
+document.getElementById("registro").innerHTML=OPERE.map((o,i)=>`<tr data-i="${i}">
+  <td>${num(i)}</td><td class="t">${esc(o.titolo)}</td><td class="hide-s">${esc(o.tecnica)}</td>
+  <td>${esc(o.misure)}</td><td class="hide-s">${o.anno||""}</td><td class="r">${stato(o)}</td></tr>`).join("");
+document.getElementById("registro").onclick=e=>{const r=e.target.closest("tr");if(r)openLb(+r.dataset.i)};
+
+// Foglio a schermo intero
+const lb=document.getElementById("lb"), stage=document.getElementById("lbStage");
+let cur=0, lastFocus=null;
+function show(i){
+  cur=i;const o=OPERE[i],[w,h]=dims(o);
+  const sh=stage.clientHeight-110, sw=stage.clientWidth-110;
+  stage.style.setProperty("--lw",Math.max(160,Math.min(sw,sh*w/h))+"px");
+  stage.innerHTML=quoted(o,i);
+  stage.querySelector("img").loading="eager";
+  draw(stage.querySelector(".q"));
+  document.getElementById("lbCount").textContent=`Foglio ${num(i)} / ${String(OPERE.length).padStart(2,"0")}`;
+  document.getElementById("lbNote").textContent=o.note||"";
+  document.getElementById("lbCart").innerHTML=`
+    <div class="full"><span class="lbl">Tav. ${num(i)} — Titolo</span><span class="v t">${esc(o.titolo)}</span></div>
+    <div><span class="lbl">Tecnica</span><span class="v">${esc(o.tecnica)}</span></div>
+    <div><span class="lbl">Anno</span><span class="v">${o.anno||"—"}</span></div>
+    <div><span class="lbl">Misure</span><span class="v">${esc(o.misure)}</span></div>
+    <div><span class="lbl">Serie</span><span class="v">${esc(o.serie||"—")}</span></div>
+    <div class="full"><span class="lbl">Stato</span><span class="v">${stato(o)}</span></div>`;
+}
+function openLb(i){lastFocus=document.activeElement;lb.classList.add("open");document.body.style.overflow="hidden";show(i);document.getElementById("lbClose").focus()}
+function closeLb(){lb.classList.remove("open");document.body.style.overflow="";lastFocus&&lastFocus.focus&&lastFocus.focus()}
+function step(d){const list=view.includes(cur)?view:OPERE.map((_,i)=>i);const p=list.indexOf(cur);show(list[(p+d+list.length)%list.length])}
+document.getElementById("lbClose").onclick=closeLb;
+document.getElementById("lbPrev").onclick=()=>step(-1);
+document.getElementById("lbNext").onclick=()=>step(1);
+document.addEventListener("keydown",e=>{if(!lb.classList.contains("open"))return;
+  if(e.key==="Escape")closeLb();if(e.key==="ArrowRight")step(1);if(e.key==="ArrowLeft")step(-1)});
+let tx=0;stage.addEventListener("touchstart",e=>tx=e.touches[0].clientX,{passive:true});
+stage.addEventListener("touchend",e=>{const d=e.changedTouches[0].clientX-tx;if(Math.abs(d)>50)step(d<0?1:-1)});
+addEventListener("resize",()=>{if(lb.classList.contains("open"))show(cur)});
 </script>
+<script src="../banco.js"></script>
 </body>
 </html>
